@@ -9,6 +9,7 @@ import { apiClient } from '../utils/apiClient';
 import { ErrorHandler } from '../utils/errorHandler';
 import { IS_DEVELOPMENT } from '../utils/constants';
 import type { OAuthAuthorizeRequest, OAuthAuthorizeResponse } from '../types';
+import { OAUTH_REDIRECT_URI } from '../utils/constants';
 
 export interface AuthContextType {
   user: User | null;
@@ -68,11 +69,23 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
       setIsLoading(true);
 
       // Step 1: バックエンドから認可 URL を取得
-      const authorizeRequest: OAuthAuthorizeRequest = { provider };
+      const authorizeRequest: OAuthAuthorizeRequest = {
+        provider,
+        redirect_uri: OAUTH_REDIRECT_URI,
+      };
+      
+      if (IS_DEVELOPMENT) {
+        console.log('[AuthContext] Sending authorize request:', authorizeRequest);
+      }
+
       const response = await apiClient.post<OAuthAuthorizeResponse>(
         '/auth/oauth/authorize',
         authorizeRequest,
       );
+
+      if (IS_DEVELOPMENT) {
+        console.log('[AuthContext] Got redirect URL:', response.redirect_url);
+      }
 
       // Step 2: OAuth2 プロバイダーへリダイレクト
       window.location.href = response.redirect_url;

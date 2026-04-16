@@ -8,6 +8,7 @@ import type { User, Post, Comment, PaginatedResponse } from './domain';
 // ========== 認証関連 ==========
 export interface OAuthAuthorizeRequest {
   provider: 'google' | 'github';
+  redirect_uri: string;
 }
 
 export interface OAuthAuthorizeResponse {

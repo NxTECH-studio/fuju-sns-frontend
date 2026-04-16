@@ -17,6 +17,7 @@ export interface AuthContextType {
   login: (provider: 'google' | 'github') => Promise<void>;
   logout: () => Promise<void>;
   checkSession: () => Promise<void>;
+  setCurrentUser: (user: User) => void;
 }
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
@@ -107,6 +108,16 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     }
   }, []);
 
+  /**
+   * 現在のユーザーを設定
+   */
+  const setCurrentUser = React.useCallback((currentUser: User) => {
+    setUser(currentUser);
+    if (IS_DEVELOPMENT) {
+      console.log('[AuthContext] User set:', currentUser.username);
+    }
+  }, []);
+
   const value: AuthContextType = {
     user,
     isLoading,
@@ -114,6 +125,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     login,
     logout,
     checkSession,
+    setCurrentUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

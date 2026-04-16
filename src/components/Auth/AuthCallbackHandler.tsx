@@ -15,7 +15,7 @@ import type { OAuthCallbackRequest, OAuthCallbackResponse } from '../../types';
  * URL: /auth/callback?code={code}&state={state}
  */
 export const AuthCallbackHandler: FC = () => {
-  const { checkSession } = useAuth();
+  const { setCurrentUser } = useAuth();
   const [error, setError] = React.useState<string | null>(null);
 
   useEffect(() => {
@@ -50,8 +50,8 @@ export const AuthCallbackHandler: FC = () => {
           console.log('[AuthCallbackHandler] Authentication successful:', response.user);
         }
 
-        // セッション情報をリロード
-        await checkSession();
+        // ユーザー情報をコンテキストに保存
+        setCurrentUser(response.user);
 
         // ダッシュボードへリダイレクト
         window.location.href = '/dashboard';
@@ -63,7 +63,7 @@ export const AuthCallbackHandler: FC = () => {
     };
 
     handleCallback();
-  }, [checkSession]);
+  }, [setCurrentUser]);
 
   if (error) {
     return (

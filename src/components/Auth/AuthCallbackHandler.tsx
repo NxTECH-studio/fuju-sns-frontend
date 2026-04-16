@@ -41,6 +41,13 @@ export const AuthCallbackHandler: FC = () => {
           device_type: 'web',
         };
 
+        if (IS_DEVELOPMENT) {
+          console.log('[AuthCallbackHandler] Sending callback request:', {
+            endpoint: '/auth/oauth/callback',
+            body: callbackRequest,
+          });
+        }
+
         const response = await apiClient.post<OAuthCallbackResponse>(
           '/auth/oauth/callback',
           callbackRequest,
@@ -53,8 +60,8 @@ export const AuthCallbackHandler: FC = () => {
         // ユーザー情報をコンテキストに保存
         setCurrentUser(response.user);
 
-        // ダッシュボードへリダイレクト
-        window.location.href = '/dashboard';
+        // ホームページへリダイレクト
+        globalThis.location.href = '/home';
       } catch (err) {
         const { message } = ErrorHandler.handle(err);
         console.error('[AuthCallbackHandler] Callback failed:', message);

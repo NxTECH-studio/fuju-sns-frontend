@@ -1,4 +1,5 @@
 # FUJU SNS フロントエンド - 実装方針書
+
 **バージョン**: 1.0  
 **最終更新**: 2026-04-16  
 **ステータス**: ドラフト
@@ -67,18 +68,19 @@ UI Update
 
 ### 2.1 フレームワーク選定
 
-| 選定項目 | 採用技術 | 理由 |
-|---------|--------|------|
-| ライブラリ | React 19 | モダン、ES2021+ 対応、JSX |
-| 言語 | TypeScript | 型安全性、IDE サポート、エラー防止 |
-| ビルドツール | Vite | 高速、ES modules 対応、開発DX向上 |
-| パッケージマネージャー | npm | 標準、ecosystem 充実 |
+| 選定項目               | 採用技術   | 理由                                |
+| ---------------------- | ---------- | ----------------------------------- |
+| ライブラリ             | React 19   | モダン、ES2021+ 対応、JSX           |
+| 言語                   | TypeScript | 型安全性、IDE サポート、エラー防止  |
+| ビルドツール           | Vite       | 高速、ES modules 対応、開発 DX 向上 |
+| パッケージマネージャー | npm        | 標準、ecosystem 充実                |
 
 ### 2.2 状態管理
 
 **エプローチ**: React Hooks + Context API（Redux 不要）
 
 **理由**:
+
 - 小〜中規模プロジェクトには過剰な複雑性
 - Hooks で十分な機能性
 - バンドルサイズ削減
@@ -131,7 +133,7 @@ class ApiClient {
   async request<T>(method: string, endpoint: string, body?: unknown): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     const headers: HeadersInit = { 'Content-Type': 'application/json' };
-    
+
     if (this.token) headers['Authorization'] = `Bearer ${this.token}`;
 
     const response = await fetch(url, {
@@ -184,6 +186,7 @@ export const UserProfile = ({ user }: Props) => (
 - **API モック**: MSW (Mock Service Worker)
 
 **理由**:
+
 - React Testing Library: 実装詳細に依存しない、ユーザー視点のテスト
 - Vitest: Vite ネイティブ、高速
 - MSW: API レベルでのモック
@@ -367,6 +370,7 @@ npm install -D \
 #### 1.3 基本コンポーネント & Hooks
 
 実装順序:
+
 1. `apiClient.ts` - fetch ベースの API ラッパー
 2. `useAuthCallback.ts` - OAuth2 コールバック処理
 3. `useAuth.ts` - 認証状態管理
@@ -444,10 +448,10 @@ const LoginPage = () => {
   const handleOAuth2Login = async (provider: 'google' | 'github') => {
     try {
       // Backend から OAuth2 認可 URL を取得
-      const response = await apiClient.post<{ redirect_url: string }>(
-        '/auth/oauth/authorize',
-        { provider, redirect_uri: import.meta.env.VITE_OAUTH_REDIRECT_URI }
-      );
+      const response = await apiClient.post<{ redirect_url: string }>('/auth/oauth/authorize', {
+        provider,
+        redirect_uri: import.meta.env.VITE_OAUTH_REDIRECT_URI,
+      });
       // ユーザーを OAuth2 プロバイダーへリダイレクト
       window.location.href = response.redirect_url;
     } catch (error) {
@@ -455,11 +459,7 @@ const LoginPage = () => {
     }
   };
 
-  return (
-    <button onClick={() => handleOAuth2Login('google')}>
-      Sign in with Google
-    </button>
-  );
+  return <button onClick={() => handleOAuth2Login('google')}>Sign in with Google</button>;
 };
 
 // Step 2: プロバイダーからコールバック (URL: /auth/callback?code=X&state=Y)
@@ -537,7 +537,7 @@ const apiClient = new ApiClient({
 ```typescript
 // 1. API Error（バックエンド由来）
 interface ApiError extends Error {
-  code: string;      // e.g., "INVALID_REQUEST"
+  code: string; // e.g., "INVALID_REQUEST"
   statusCode: number;
   message: string;
   timestamp: string;
@@ -573,7 +573,7 @@ class ErrorHandler {
     if (error instanceof Response) {
       // HTTP レスポンスエラー
       try {
-        const data = await error.json() as ApiError;
+        const data = (await error.json()) as ApiError;
         return { code: data.code, message: data.message };
       } catch {
         return { code: `HTTP_${error.status}`, message: error.statusText };
@@ -594,7 +594,7 @@ class ErrorHandler {
 }
 
 // Hook: 統一されたエラーハンドリング
-const useData = <T,>(fetcher: () => Promise<T>) => {
+const useData = <T>(fetcher: () => Promise<T>) => {
   const [data, setData] = React.useState<T | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -629,10 +629,7 @@ interface ErrorBoundaryProps {
   fallback?: (error: string, retry: () => void) => ReactNode;
 }
 
-export class ErrorBoundary extends React.Component<
-  ErrorBoundaryProps,
-  { error: string | null }
-> {
+export class ErrorBoundary extends React.Component<ErrorBoundaryProps, { error: string | null }> {
   state = { error: null };
 
   static getDerivedStateFromError(error: Error) {
@@ -642,10 +639,9 @@ export class ErrorBoundary extends React.Component<
   render() {
     if (this.state.error) {
       return (
-        this.props.fallback?.(
-          this.state.error,
-          () => this.setState({ error: null })
-        ) || <ErrorPage message={this.state.error} />
+        this.props.fallback?.(this.state.error, () => this.setState({ error: null })) || (
+          <ErrorPage message={this.state.error} />
+        )
       );
     }
 
@@ -669,7 +665,7 @@ const UserProfilePage = React.lazy(() => import('./pages/UserProfilePage'));
 <Suspense fallback={<Loading />}>
   <Route path="/dashboard" element={<DashboardPage />} />
   <Route path="/users/:id" element={<UserProfilePage />} />
-</Suspense>
+</Suspense>;
 ```
 
 ### 7.2 メモ化
@@ -716,7 +712,7 @@ const useInfiniteScroll = (fetcher: (offset: number) => Promise<unknown[]>) => {
           }
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     if (observerRef.current) observer.observe(observerRef.current);
@@ -756,7 +752,9 @@ describe('UserProfile', () => {
   });
 
   it('shows edit button when editable', () => {
-    const mockUser = { /* ... */ };
+    const mockUser = {
+      /* ... */
+    };
     render(<UserProfile user={mockUser} editable={true} />);
 
     expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument();
@@ -859,16 +857,19 @@ jobs:
 # GitHub Copilot Instructions for FUJU Frontend
 
 ## Language
+
 - 日本語で応答してください
 - コード内のコメント・変数名は英語で統一
 
 ## On Code Generation
+
 - TypeScript + React の型安全性を厳密に
 - コンポーネントは FC<Props> で型定義
 - カスタムフックでロジック分離
 - エラーハンドリング必須
 
 ## On Code Review (PR)
+
 - TypeScript 型の正確性
 - テストカバレッジ（80%+）
 - バックエンド API との整合性
@@ -909,7 +910,7 @@ class ApiClient {
     });
 
     if (!response.ok) {
-      const error = await response.json() as ApiError;
+      const error = (await response.json()) as ApiError;
       throw new ApiError(error.code, error.message, response.status);
     }
 
@@ -947,26 +948,29 @@ export const usePosts = (initialLimit = 20) => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  const fetchPosts = React.useCallback(async (newOffset: number) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await apiClient.get<ApiResponse<Post[]>>(
-        `/posts?limit=${initialLimit}&offset=${newOffset}`
-      );
-      if (newOffset === 0) {
-        setPosts(response.data);
-      } else {
-        setPosts((prev) => [...prev, ...response.data]);
+  const fetchPosts = React.useCallback(
+    async (newOffset: number) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await apiClient.get<ApiResponse<Post[]>>(
+          `/posts?limit=${initialLimit}&offset=${newOffset}`,
+        );
+        if (newOffset === 0) {
+          setPosts(response.data);
+        } else {
+          setPosts((prev) => [...prev, ...response.data]);
+        }
+        setTotal(response.meta.total);
+        setOffset(newOffset);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setIsLoading(false);
       }
-      setTotal(response.meta.total);
-      setOffset(newOffset);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [initialLimit]);
+    },
+    [initialLimit],
+  );
 
   React.useEffect(() => {
     fetchPosts(0);
@@ -985,6 +989,7 @@ export const usePosts = (initialLimit = 20) => {
 ## 11. 実装チェックリスト
 
 ### Phase 1 確認項目
+
 - [ ] Vite プロジェクト初期化完了
 - [ ] TypeScript strict mode 設定
 - [ ] ESLint + Prettier 設定
@@ -995,6 +1000,7 @@ export const usePosts = (initialLimit = 20) => {
 - [ ] 基本ルーティング
 
 ### Phase 2-5 確認項目
+
 - [ ] 全コンポーネント実装
 - [ ] 全 Hook 実装
 - [ ] エラーハンドリング実装
@@ -1002,6 +1008,7 @@ export const usePosts = (initialLimit = 20) => {
 - [ ] レスポンシブデザイン確認
 
 ### Phase 6-7 確認項目
+
 - [ ] ユニットテスト (80%+)
 - [ ] GitHub Actions 設定
 - [ ] Lint/Build/Test 自動化
@@ -1025,21 +1032,21 @@ export const usePosts = (initialLimit = 20) => {
 
 **ベース URL**: `http://localhost:8080/v1` (dev)
 
-| エンドポイント | 説明 |
-|---|---|
-| `POST /auth/oauth/authorize` | OAuth2 認可 URL 生成 |
-| `POST /auth/oauth/callback` | OAuth2 コールバック |
-| `POST /auth/logout` | ログアウト |
-| `GET /users` | ユーザーリスト |
-| `POST /users` | ユーザー作成 |
-| `GET /users/{id}` | ユーザー詳細 |
-| `PUT /users/{id}` | プロフィール更新 |
-| `GET /posts` | 投稿リスト（ページネーション） |
-| `POST /posts` | 投稿作成 |
-| `GET /posts/{id}` | 投稿詳細 |
-| `DELETE /posts/{id}` | 投稿削除 |
-| `POST /posts/{id}/comments` | コメント追加 |
-| `DELETE /posts/{post_id}/comments/{comment_id}` | コメント削除 |
+| エンドポイント                                  | 説明                           |
+| ----------------------------------------------- | ------------------------------ |
+| `POST /auth/oauth/authorize`                    | OAuth2 認可 URL 生成           |
+| `POST /auth/oauth/callback`                     | OAuth2 コールバック            |
+| `POST /auth/logout`                             | ログアウト                     |
+| `GET /users`                                    | ユーザーリスト                 |
+| `POST /users`                                   | ユーザー作成                   |
+| `GET /users/{id}`                               | ユーザー詳細                   |
+| `PUT /users/{id}`                               | プロフィール更新               |
+| `GET /posts`                                    | 投稿リスト（ページネーション） |
+| `POST /posts`                                   | 投稿作成                       |
+| `GET /posts/{id}`                               | 投稿詳細                       |
+| `DELETE /posts/{id}`                            | 投稿削除                       |
+| `POST /posts/{id}/comments`                     | コメント追加                   |
+| `DELETE /posts/{post_id}/comments/{comment_id}` | コメント削除                   |
 
 ---
 
@@ -1051,14 +1058,14 @@ export const usePosts = (initialLimit = 20) => {
 
 #### キャッシュ対象エンドポイント
 
-| エンドポイント | TTL | キャッシュ戦略 | 理由 |
-|---|---|---|---|
-| `GET /users/{id}` | 1 時間 | Time-based | ユーザー情報は変更頻度低 |
-| `GET /users` | 30 分 | Time-based | ユーザーリストは頻度低 |
-| `GET /posts` | キャッシュなし | Invalidate | 常に最新の投稿を表示 |
-| `GET /posts/{id}` | 5 分 | Time-based + URL変更時 | コメント追加時に無効化 |
-| `POST /posts` | - | 自動無効化 | 作成後は投稿リスト無効化 |
-| `DELETE /posts/{id}` | - | 自動無効化 | リスト・詳細無効化 |
+| エンドポイント       | TTL            | キャッシュ戦略          | 理由                     |
+| -------------------- | -------------- | ----------------------- | ------------------------ |
+| `GET /users/{id}`    | 1 時間         | Time-based              | ユーザー情報は変更頻度低 |
+| `GET /users`         | 30 分          | Time-based              | ユーザーリストは頻度低   |
+| `GET /posts`         | キャッシュなし | Invalidate              | 常に最新の投稿を表示     |
+| `GET /posts/{id}`    | 5 分           | Time-based + URL 変更時 | コメント追加時に無効化   |
+| `POST /posts`        | -              | 自動無効化              | 作成後は投稿リスト無効化 |
+| `DELETE /posts/{id}` | -              | 自動無効化              | リスト・詳細無効化       |
 
 ### 13.2 実装パターン例
 
@@ -1072,41 +1079,44 @@ interface CacheEntry<T> {
 
 const cache = new Map<string, CacheEntry<any>>();
 
-const useCachedData = <T,>(
+const useCachedData = <T>(
   endpoint: string,
-  ttl: number = 5 * 60 * 1000 // 5 minutes default
+  ttl: number = 5 * 60 * 1000, // 5 minutes default
 ): UseDataReturn<T> => {
   const [data, setData] = React.useState<T | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
-  const fetchData = React.useCallback(async (skipCache = false) => {
-    // キャッシュ確認
-    if (!skipCache && cache.has(endpoint)) {
-      const entry = cache.get(endpoint)!;
-      if (Date.now() - entry.timestamp < entry.ttl) {
-        setData(entry.data);
-        setIsLoading(false);
-        return;
+  const fetchData = React.useCallback(
+    async (skipCache = false) => {
+      // キャッシュ確認
+      if (!skipCache && cache.has(endpoint)) {
+        const entry = cache.get(endpoint)!;
+        if (Date.now() - entry.timestamp < entry.ttl) {
+          setData(entry.data);
+          setIsLoading(false);
+          return;
+        }
       }
-    }
 
-    // API 呼び出し
-    try {
-      setIsLoading(true);
-      const response = await apiClient.get<T>(endpoint);
-      cache.set(endpoint, {
-        data: response,
-        timestamp: Date.now(),
-        ttl,
-      });
-      setData(response);
-    } catch (err) {
-      setError(ErrorHandler.handle(err).message);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [endpoint, ttl]);
+      // API 呼び出し
+      try {
+        setIsLoading(true);
+        const response = await apiClient.get<T>(endpoint);
+        cache.set(endpoint, {
+          data: response,
+          timestamp: Date.now(),
+          ttl,
+        });
+        setData(response);
+      } catch (err) {
+        setError(ErrorHandler.handle(err).message);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [endpoint, ttl],
+  );
 
   React.useEffect(() => {
     fetchData();
@@ -1121,7 +1131,7 @@ const useCachedData = <T,>(
 const useDeletePost = () => {
   const deletePost = async (postId: number) => {
     await apiClient.delete(`/posts/${postId}`);
-    
+
     // 投稿リストと詳細キャッシュを無効化
     cache.delete('/posts');
     cache.delete(`/posts/${postId}`);
@@ -1145,20 +1155,20 @@ const useDeletePost = () => {
 
 #### 読込時間目標
 
-| メトリック | 目標値 | 測定方法 |
-|---|---|---|
-| First Contentful Paint (FCP) | < 1.5 秒 | Lighthouse / WebPageTest |
-| Largest Contentful Paint (LCP) | < 2.5 秒 | Web Vitals |
-| Cumulative Layout Shift (CLS) | < 0.1 | Web Vitals |
-| Time to Interactive (TTI) | < 3.5 秒 | Lighthouse |
+| メトリック                     | 目標値   | 測定方法                 |
+| ------------------------------ | -------- | ------------------------ |
+| First Contentful Paint (FCP)   | < 1.5 秒 | Lighthouse / WebPageTest |
+| Largest Contentful Paint (LCP) | < 2.5 秒 | Web Vitals               |
+| Cumulative Layout Shift (CLS)  | < 0.1    | Web Vitals               |
+| Time to Interactive (TTI)      | < 3.5 秒 | Lighthouse               |
 
 #### バンドルサイズ目標
 
-| コンポーネント | 目標サイズ | 方法 |
-|---|---|---|
-| 初期 JS バンドル | < 150 KB (gzip) | Code splitting + Lazy loading |
-| CSS | < 30 KB (gzip) | CSS Modules + Purge CSS |
-| 画像 | < 500 KB (total) | Image optimization + WebP |
+| コンポーネント   | 目標サイズ       | 方法                          |
+| ---------------- | ---------------- | ----------------------------- |
+| 初期 JS バンドル | < 150 KB (gzip)  | Code splitting + Lazy loading |
+| CSS              | < 30 KB (gzip)   | CSS Modules + Purge CSS       |
+| 画像             | < 500 KB (total) | Image optimization + WebP     |
 
 #### 実装施策
 
@@ -1173,7 +1183,7 @@ const Profile = React.lazy(() => import('./pages/Profile'));
 </Suspense>
 
 // 画像遅延ロード
-<img 
+<img
   src={postImage.url}
   loading="lazy"
   decoding="async"
@@ -1193,11 +1203,11 @@ const Profile = React.lazy(() => import('./pages/Profile'));
 
 #### レスポンシブデザイン
 
-| デバイス | 解像度 | テスト対象 |
-|---|---|---|
-| モバイル | 320px | iPhone SE, 古い Android |
-| タブレット | 768px | iPad, Android tablet |
-| デスクトップ | 1920px | 標準モニター |
+| デバイス     | 解像度 | テスト対象              |
+| ------------ | ------ | ----------------------- |
+| モバイル     | 320px  | iPhone SE, 古い Android |
+| タブレット   | 768px  | iPad, Android tablet    |
+| デスクトップ | 1920px | 標準モニター            |
 
 #### 参考実装
 
@@ -1225,20 +1235,24 @@ background: var(--color-bg-primary); /* 4.5:1 minimum */
 ### 14.3 セキュリティ要件
 
 #### CSRF 対策
+
 - [ ] リクエストヘッダに CSRF トークンを含める
 - [ ] POST/PUT/DELETE 時にトークン検証
 
 #### XSS 対策
+
 - [ ] ユーザー入力は常に Escape/Sanitize
 - [ ] DOMPurify ライブラリ使用（HTML コンテンツ表示時）
 - [ ] Content Security Policy (CSP) ヘッダ設定
 
-####安全な通信
+#### 安全な通信
+
 - [ ] HTTPS のみ（HTTP 非対応）
 - [ ] HttpOnly + Secure + SameSite=Strict Cookie 設定
 - [ ] CORS ポリシー厳密設定
 
 #### ユーザーデータ保護
+
 - [ ] LocalStorage にセンシティブデータ非保存
 - [ ] セッション有効期限切れ時は自動ログアウト
 - [ ] 認証失敗時は詳細エラーメッセージ非表示
@@ -1249,19 +1263,13 @@ background: var(--color-bg-primary); /* 4.5:1 minimum */
 
 ```typescript
 // 自動リトライ（3 回まで、指数バックオフ）
-const withRetry = async <T,>(
-  fn: () => Promise<T>,
-  maxRetries = 3,
-  delay = 1000
-): Promise<T> => {
+const withRetry = async <T>(fn: () => Promise<T>, maxRetries = 3, delay = 1000): Promise<T> => {
   for (let i = 0; i < maxRetries; i++) {
     try {
       return await fn();
     } catch (error) {
       if (i === maxRetries - 1) throw error;
-      await new Promise((resolve) => 
-        setTimeout(resolve, delay * Math.pow(2, i))
-      );
+      await new Promise((resolve) => setTimeout(resolve, delay * Math.pow(2, i)));
     }
   }
   throw new Error('Retry exhausted');
@@ -1277,16 +1285,19 @@ const withRetry = async <T,>(
 ### 14.5 保守性要件
 
 #### コード品質
+
 - [ ] TypeScript 厳格モード（noImplicitAny, strict: true）
 - [ ] ESLint + Prettier 自動チェック
 - [ ] 品質スコア: SonarQube A 以上
 
 #### テストカバレッジ
+
 - [ ] ユニットテスト: 80% 以上
 - [ ] 統合テスト: 60% 以上
 - [ ] E2E テスト: 主要フロー 100%
 
 #### ドキュメント
+
 - [ ] JSDoc コメント必須
 - [ ] README.md で環境構築手順記載
 - [ ] API インテグレーション仕様書管理
@@ -1350,13 +1361,8 @@ const OFFLINE_URL = '/offline.html';
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll([
-        '/',
-        '/offline.html',
-        '/index.html',
-        '/css/styles.css',
-      ]);
-    })
+      return cache.addAll(['/', '/offline.html', '/index.html', '/css/styles.css']);
+    }),
   );
   self.skipWaiting(); // 即座にアクティベート
 });
@@ -1366,11 +1372,9 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((names) => {
       return Promise.all(
-        names
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
+        names.filter((name) => name !== CACHE_NAME).map((name) => caches.delete(name)),
       );
-    })
+    }),
   );
   self.clients.claim();
 });
@@ -1396,7 +1400,7 @@ self.addEventListener('fetch', (event) => {
           // キャッシュもない場合: offline.html を返す
           return caches.match(OFFLINE_URL);
         });
-      })
+      }),
   );
 });
 ```
@@ -1540,10 +1544,7 @@ class OfflineQueue {
       case 'DELETE_POST':
         return apiClient.delete(`/posts/${action.payload.postId}`);
       case 'ADD_COMMENT':
-        return apiClient.post(
-          `/posts/${action.payload.postId}/comments`,
-          action.payload.comment
-        );
+        return apiClient.post(`/posts/${action.payload.postId}/comments`, action.payload.comment);
       default:
         throw new Error(`Unknown action type: ${action.type}`);
     }
@@ -1636,13 +1637,7 @@ export class FaviconGenerator {
 
       ctx.fillStyle = this.defaultColor;
       ctx.beginPath();
-      ctx.arc(
-        badgeX + badgeSize / 2,
-        badgeY + badgeSize / 2,
-        badgeSize / 2,
-        0,
-        2 * Math.PI
-      );
+      ctx.arc(badgeX + badgeSize / 2, badgeY + badgeSize / 2, badgeSize / 2, 0, 2 * Math.PI);
       ctx.fill();
 
       // バッジ内の数字
@@ -1652,11 +1647,7 @@ export class FaviconGenerator {
       ctx.textBaseline = 'middle';
 
       const displayCount = count > 99 ? '99+' : String(count);
-      ctx.fillText(
-        displayCount,
-        badgeX + badgeSize / 2,
-        badgeY + badgeSize / 2
-      );
+      ctx.fillText(displayCount, badgeX + badgeSize / 2, badgeY + badgeSize / 2);
     }
 
     // Canvas を Data URL に変換
@@ -1667,9 +1658,7 @@ export class FaviconGenerator {
    * Favicon を DOM に適用
    */
   static apply(dataUrl: string) {
-    let link = document.querySelector(
-      'link[rel="icon"]'
-    ) as HTMLLinkElement | null;
+    let link = document.querySelector('link[rel="icon"]') as HTMLLinkElement | null;
 
     if (!link) {
       link = document.createElement('link');
@@ -1693,20 +1682,17 @@ interface NotificationState {
 }
 
 const useNotificationBadge = () => {
-  const [notificationState, setNotificationState] =
-    React.useState<NotificationState>({
-      unreadCount: 0,
-      hasNotification: false,
-    });
+  const [notificationState, setNotificationState] = React.useState<NotificationState>({
+    unreadCount: 0,
+    hasNotification: false,
+  });
 
   // 通知状態を取得
   React.useEffect(() => {
     const fetchNotifications = async () => {
       try {
         const response = await apiClient.get('/notifications');
-        const unreadCount = response.data.filter(
-          (n: any) => !n.read
-        ).length;
+        const unreadCount = response.data.filter((n: any) => !n.read).length;
         setNotificationState({
           unreadCount,
           hasNotification: unreadCount > 0,
@@ -1750,9 +1736,7 @@ const App: FC = () => {
         <Route path="/profile" element={<Profile />} />
         {/* ... */}
       </Routes>
-      {unreadCount > 0 && (
-        <NotificationIndicator count={unreadCount} />
-      )}
+      {unreadCount > 0 && <NotificationIndicator count={unreadCount} />}
     </Layout>
   );
 };
@@ -1760,12 +1744,12 @@ const App: FC = () => {
 
 ### 16.3 ブラウザ互換性
 
-| ブラウザ | Canvas Favicon | Service Worker | オフライン対応 |
-|---|---|---|---|
-| Chrome 90+ | ✅ | ✅ | ✅ |
-| Firefox 88+ | ✅ | ✅ | ✅ |
-| Safari 15+ | ✅ | ✅ | ✅ |
-| Edge 90+ | ✅ | ✅ | ✅ |
+| ブラウザ    | Canvas Favicon | Service Worker | オフライン対応 |
+| ----------- | -------------- | -------------- | -------------- |
+| Chrome 90+  | ✅             | ✅             | ✅             |
+| Firefox 88+ | ✅             | ✅             | ✅             |
+| Safari 15+  | ✅             | ✅             | ✅             |
+| Edge 90+    | ✅             | ✅             | ✅             |
 
 ### 16.4 パフォーマンス最適化
 
@@ -1798,4 +1782,3 @@ const useNotificationBadgeOptimized = () => {
 
 **キャッシング・非機能要件・オフライン対応**: ✅ 確定版  
 **実装予定フェーズ**: フェーズ 2-4 で段階的実装
-

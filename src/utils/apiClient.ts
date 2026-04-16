@@ -51,11 +51,7 @@ export class ApiClient {
   /**
    * 内部: 汎用リクエスト実装
    */
-  private async request<T>(
-    method: string,
-    endpoint: string,
-    body?: unknown
-  ): Promise<T> {
+  private async request<T>(method: string, endpoint: string, body?: unknown): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
 
     const headers: HeadersInit = {

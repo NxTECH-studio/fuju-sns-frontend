@@ -5,20 +5,8 @@ import ErrorBoundary from './components/Common/ErrorBoundary';
 import { AuthGuard } from './components/Auth/AuthGuard';
 import { AuthCallbackHandler } from './components/Auth/AuthCallbackHandler';
 import { LoginPage } from './pages/LoginPage';
+import { DashboardPage } from './pages/DashboardPage';
 import './App.css';
-
-/**
- * ダッシュボード（スケルトン）
- * Phase 2 で実装
- */
-const DashboardPage: FC = () => {
-  return (
-    <div style={{ padding: '2rem', textAlign: 'center' }}>
-      <h1>ダッシュボード</h1>
-      <p>Phase 2 で実装予定です</p>
-    </div>
-  );
-};
 
 /**
  * 404 ページ

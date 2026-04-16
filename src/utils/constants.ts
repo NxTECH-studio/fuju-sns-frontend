@@ -3,8 +3,7 @@
  */
 
 // ========== API 設定 ==========
-export const API_BASE_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:8080/v1';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/v1';
 
 export const API_TIMEOUT_MS = 30000; // 30 seconds
 

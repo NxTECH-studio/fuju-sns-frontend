@@ -26,6 +26,13 @@ export class ErrorHandler {
   static async fromResponse(response: Response): Promise<ApiError> {
     try {
       const data: ApiErrorResponse = await response.json();
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[ErrorHandler] API Error Response:', {
+          status: response.status,
+          url: response.url,
+          data,
+        });
+      }
       return new ApiError(response.status, data.code, data.message, data.timestamp);
     } catch {
       return new ApiError(

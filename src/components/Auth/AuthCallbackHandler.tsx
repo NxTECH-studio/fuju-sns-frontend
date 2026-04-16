@@ -15,7 +15,7 @@ import type { OAuthCallbackRequest, OAuthCallbackResponse } from '../../types';
  * URL: /auth/callback?code={code}&state={state}
  */
 export const AuthCallbackHandler: FC = () => {
-  const { checkSession } = useAuth();
+  const { setCurrentUser } = useAuth();
   const [error, setError] = React.useState<string | null>(null);
 
   useEffect(() => {
@@ -41,6 +41,13 @@ export const AuthCallbackHandler: FC = () => {
           device_type: 'web',
         };
 
+        if (IS_DEVELOPMENT) {
+          console.log('[AuthCallbackHandler] Sending callback request:', {
+            endpoint: '/auth/oauth/callback',
+            body: callbackRequest,
+          });
+        }
+
         const response = await apiClient.post<OAuthCallbackResponse>(
           '/auth/oauth/callback',
           callbackRequest,
@@ -50,11 +57,11 @@ export const AuthCallbackHandler: FC = () => {
           console.log('[AuthCallbackHandler] Authentication successful:', response.user);
         }
 
-        // セッション情報をリロード
-        await checkSession();
+        // ユーザー情報をコンテキストに保存
+        setCurrentUser(response.user);
 
-        // ダッシュボードへリダイレクト
-        window.location.href = '/dashboard';
+        // ホームページへリダイレクト
+        globalThis.location.href = '/home';
       } catch (err) {
         const { message } = ErrorHandler.handle(err);
         console.error('[AuthCallbackHandler] Callback failed:', message);
@@ -63,7 +70,7 @@ export const AuthCallbackHandler: FC = () => {
     };
 
     handleCallback();
-  }, [checkSession]);
+  }, [setCurrentUser]);
 
   if (error) {
     return (

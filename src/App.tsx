@@ -43,6 +43,15 @@ const App: FC = () => {
               }
             />
 
+            <Route
+              path="/home"
+              element={
+                <AuthGuard>
+                  <DashboardPage />
+                </AuthGuard>
+              }
+            />
+
             {/* デフォルトルート */}
             <Route path="/" element={<Navigate to="/dashboard" />} />
 

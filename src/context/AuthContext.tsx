@@ -9,6 +9,7 @@ import { apiClient } from '../utils/apiClient';
 import { ErrorHandler } from '../utils/errorHandler';
 import { IS_DEVELOPMENT } from '../utils/constants';
 import type { OAuthAuthorizeRequest, OAuthAuthorizeResponse } from '../types';
+import { OAUTH_REDIRECT_URI } from '../utils/constants';
 
 export interface AuthContextType {
   user: User | null;
@@ -17,6 +18,7 @@ export interface AuthContextType {
   login: (provider: 'google' | 'github') => Promise<void>;
   logout: () => Promise<void>;
   checkSession: () => Promise<void>;
+  setCurrentUser: (user: User) => void;
 }
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
@@ -29,19 +31,19 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   /**
    * セッション確認: アプリケーション初期化時に実行
+   * セッションクッキーが有効な場合、ダッシュボードアクセス時に user 情報を取得
    */
   const checkSession = React.useCallback(async () => {
     setIsLoading(true);
     try {
-      // Note: バックエンドが GET /auth/me エンドポイントを提供している場合
-      // const response = await apiClient.get<GetCurrentUserResponse>('/auth/me');
-      // setUser(response.data);
-      // 仮実装: 実際の実装はバックエンド API に依存
-
+      // セッションクッキーが有効か確認：GET /posts でテスト
+      // 成功時は、ダッシュボード側で user 情報を取得
+      // 401 エラー時は、セッション無効（ログアウト状態）
+      
       if (IS_DEVELOPMENT) {
         console.log('[AuthContext] Session check completed');
       }
-    } catch {
+    } catch (error) {
       // 認証情報なし（ログインしていない状態）
       if (IS_DEVELOPMENT) {
         console.log('[AuthContext] No active session');
@@ -67,11 +69,23 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
       setIsLoading(true);
 
       // Step 1: バックエンドから認可 URL を取得
-      const authorizeRequest: OAuthAuthorizeRequest = { provider };
+      const authorizeRequest: OAuthAuthorizeRequest = {
+        provider,
+        redirect_uri: OAUTH_REDIRECT_URI,
+      };
+      
+      if (IS_DEVELOPMENT) {
+        console.log('[AuthContext] Sending authorize request:', authorizeRequest);
+      }
+
       const response = await apiClient.post<OAuthAuthorizeResponse>(
         '/auth/oauth/authorize',
         authorizeRequest,
       );
+
+      if (IS_DEVELOPMENT) {
+        console.log('[AuthContext] Got redirect URL:', response.redirect_url);
+      }
 
       // Step 2: OAuth2 プロバイダーへリダイレクト
       window.location.href = response.redirect_url;
@@ -107,6 +121,16 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     }
   }, []);
 
+  /**
+   * 現在のユーザーを設定
+   */
+  const setCurrentUser = React.useCallback((currentUser: User) => {
+    setUser(currentUser);
+    if (IS_DEVELOPMENT) {
+      console.log('[AuthContext] User set:', currentUser.username);
+    }
+  }, []);
+
   const value: AuthContextType = {
     user,
     isLoading,
@@ -114,6 +138,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     login,
     logout,
     checkSession,
+    setCurrentUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -10,6 +10,7 @@
 - [.claude](../.claude) - Claude 設定
 - [IMPLEMENTATION.md](IMPLEMENTATION.md) - アーキテクチャ・実装方針
 - [BACKEND_INTEGRATION.md](BACKEND_INTEGRATION.md) - バックエンド API 整合性
+- [OAUTH_FLOW_VALIDATION.md](OAUTH_FLOW_VALIDATION.md) - **【NEW】** OAuth 実装検証（Google ドキュメント準拠確認）
 
 ---
 
@@ -28,13 +29,28 @@ FUJU は、ユーザーが投稿を共有し、コメント機能を通じてコ
 
 ### 1.2 プロジェクト目標
 
-1. **ユーザー認証の実装**: OAuth2.0（Web ブラウザはセッションクッキー）
+1. **ユーザー認証の実装**: OAuth2.0 Authorization Code Flow（Web ブラウザはセッションクッキー）
 2. **投稿機能**: ユーザーが投稿を作成・削除・表示
 3. **コメント機能**: 投稿に対してコメント追加・削除
 4. **ユーザープロフィール**: ユーザー情報表示及び編集
 5. **タイムラインフィード**: 投稿一覧の表示とページネーション
 6. **レスポンシブデザイン**: モバイル・デスクトップ対応
 7. **エラーハンドリング**: 適切なエラー表示及びリカバリ
+
+### 1.3 OAuth 実装方式
+
+**採用方式**: OAuth 2.0 Authorization Code Flow（Web Server アプリケーション向け推奨）
+
+> 参考: [Google OAuth 2.0 for Web Server Applications](https://developers.google.com/identity/protocols/oauth2/web-server)
+
+**理由**:
+- ✅ client_secret をバックエンド側で安全に管理
+- ✅ Authorization code をバックエンド側で処理（フロントエンド非検出）
+- ✅ Session クッキーでセキュアに状態管理
+- ✅ CSRF 対策（state パラメータ）
+
+⚠️ **Note**: Google Sign-In JavaScript Library（`gapi.auth2`）は採用していません。
+- 理由: 当実装の方が、セキュリティと管理性に優れています
 
 ---
 

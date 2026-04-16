@@ -2,7 +2,7 @@
 
 **バージョン**: 1.0  
 **最終更新**: 2026-04-16  
-**ステータス**: 整合性確認中
+**ステータス**: ✅ 整合性確認済み（OAuth 実装検証完了）
 
 ---
 
@@ -69,6 +69,56 @@
 | メモリに session 情報保存 | Redis 側で session 管理 | ✅ | TTL 自動管理 |
 | クッキー automatic 送信 (`credentials: 'include'`) | Session 検証 | ✅ | CORS: Access-Control-Allow-Credentials |
 | `POST /auth/logout` | Session 無効化 | ✅ | クッキー削除 |
+
+**結論**: ✅ **整合性あり** - Web クライアント用のセッションベース認証は完全に対応
+
+### 2.1.1 OAuth 実装方式の詳細
+
+**採用方式**: OAuth 2.0 Authorization Code Flow（Web Server アプリケーション）
+
+**フロー**:
+
+```
+Step 1: ユーザー操作
+  LoginPage → [Google でサインイン ボタン]
+
+Step 2: Authorization URL 取得
+  フロントエンド → POST /auth/oauth/authorize { provider, redirect_uri }
+  バックエンド → Authorization URL 生成（client_id + client_secret 使用）
+  レスポンス: { redirect_url }
+
+Step 3: OAuth プロバイダーへリダイレクト
+  フロントエンド → window.location.href = redirect_url
+
+Step 4: ユーザー同意
+  OAuth プロバイダー → (ユーザーが Google アカウントでサインイン & 同意)
+
+Step 5: コールバック処理
+  OAuth プロバイダー → /auth/callback?code=xxx&state=yyy
+
+Step 6: Token 交換
+  フロントエンド → POST /auth/oauth/callback { code, state, device_type: 'web' }
+  バックエンド → client_secret を使用して Token 交換
+  レスポンス: { user } + Session Cookie 設定
+
+Step 7: 完了
+  フロントエンド → User データをメモリ保存 → /home へリダイレクト
+```
+
+**セキュリティ実装**:
+
+| 対策 | 実装箇所 | 詳細 |
+|------|--------|------|
+| **client_secret 保護** | バックエンド内管理 | フロントエンド環境変数に含めない |
+| **Authorization Code 処理** | バックエンドのみ | フロントエンドは code を直接使用しない |
+| **CSRF 対策** | state パラメータ | ランダムトークンで攻撃防止 |
+| **Access Token 保護** | バックエンド内保管 | Session Cookie で代替送信 |
+| **Session Cookie 設定** | HttpOnly, Secure, SameSite=Strict | ブラウザ側での XSS・CSRF 対策 |
+| **credentials 設定** | `credentials: 'include'` | クッキーの自動送信・受信 |
+
+**参考資料**:
+- [Google OAuth 2.0 for Web Server Applications](https://developers.google.com/identity/protocols/oauth2/web-server)
+- [OAUTH_FLOW_VALIDATION.md](OAUTH_FLOW_VALIDATION.md) - 詳細検証報告書
 
 **結論**: ✅ **整合性あり** - Web クライアント用のセッションベース認証は完全に対応
 

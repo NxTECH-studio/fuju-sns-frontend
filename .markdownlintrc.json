@@ -1,0 +1,8 @@
+{
+  "extends": "markdownlint/style/prettier",
+  "no-hard-tabs": false,
+  "fenced-code-language": false,
+  "line-length": false,
+  "html": false,
+  "table-column-style": false
+}

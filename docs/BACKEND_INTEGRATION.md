@@ -1,4 +1,5 @@
 # FUJU SNS - バックエンドとフロントエンド整合性確認書
+
 **バージョン**: 1.0  
 **最終更新**: 2026-04-16  
 **ステータス**: 整合性確認中
@@ -9,7 +10,7 @@
 
 ### 1.1 バックエンド情報
 
-- **リポジトリ**: https://github.com/NxTECH-studio/fuju-sns-backend/
+- **リポジトリ**: <https://github.com/NxTECH-studio/fuju-sns-backend/>
 - **言語**: Go 1.21+
 - **アーキテクチャ**: Clean Architecture
 - **データベース**: PostgreSQL 13+
@@ -31,7 +32,7 @@
 #### ユーザー関連
 
 | Method | Path | 説明 | Auth | Request | Response | 備考 |
-|--------|------|------|------|---------|----------|------|
+| -- | -- | -- | -- | -- | -- | -- |
 | GET | `/users` | ユーザーリスト | Optional | limit, offset | [User], total | ページネーション |
 | POST | `/users` | ユーザー作成 | Required | username, display_name, bio, avatar_url | User | 重複チェック: HTTP 409 |
 | GET | `/users/{id}` | ユーザー詳細 | Optional | - | User | 404 対応 |
@@ -40,7 +41,7 @@
 #### 投稿関連
 
 | Method | Path | 説明 | Auth | Request | Response | 備考 |
-|--------|------|------|------|---------|----------|------|
+| -- | -- | -- | -- | -- | -- | -- |
 | GET | `/posts` | タイムライン | Optional | limit, offset, user_id | [Post], total | 最大100件 |
 | POST | `/posts` | 投稿作成 | Required | content, image_urls | Post | XSS 防止: content 1-5000 |
 | GET | `/posts/{id}` | 投稿詳細 | Optional | - | Post | 関連コメント含む |
@@ -60,7 +61,7 @@
 ### 2.1 認証フロー
 
 | フロント側 | バックエンド側 | 整合性 | 備考 |
-|----------|--|--|--|
+| -- | -- | -- | -- |
 | LoginButton で provider 選択 | OAuth2 provider (Google/GitHub) | ✅ | provider enum: [google, github] |
 | `POST /auth/oauth/authorize` | OAuth2 authorization URL | ✅ | Client ID, Redirect URI をバックエンドで管理 |
 | OAuth2 provider リダイレクト | Authorization code 取得 | ✅ | State token: CSRF 対策 |
@@ -76,7 +77,7 @@
 #### ユーザープロフィール表示
 
 | フロント側 | バックエンド側 | 整合性 | 備考 |
-|----------|--|--|--|
+| -- | -- | -- | -- |
 | `GET /users/{id}` で詳細取得 | User schema 返却 | ✅ | id, username, email, display_name, bio, avatar_url, created_at, updated_at |
 | ユーザーリスト表示 | `GET /users?limit=20&offset=0` | ✅ | Pagination: limit (max 100), offset |
 | エラー: ユーザーなし | 404 Not Found | ✅ | エラーコード: NOT_FOUND |
@@ -84,7 +85,7 @@
 #### プロフィール編集
 
 | フロント側 | バックエンド側 | 整合性 | 備考 |
-|----------|--|--|--|
+| -- | -- | -- | -- |
 | `PUT /users/{id}` で更新 (display_name, bio, avatar_url) | User update | ✅ | 認証必須（自分のプロフィールのみ） |
 | 403 Forbidden | 権限チェック | ✅ | 他人のプロフィールは編集不可 |
 | 404 Not Found | ユーザーなし | ✅ | |
@@ -92,7 +93,7 @@
 #### 新規ユーザー作成
 
 | フロント側 | バックエンド側 | 整合性 | 備考 |
-|----------|--|--|--|
+| -- | -- | -- | -- |
 | `POST /users` (username 必須, 3-50文字) | Username validation | ✅ | |
 | 409 Conflict | Username 重複 | ✅ | エラーメッセージ: "Username already exists" |
 | 400 Bad Request | Validation error | ✅ | display_name, bio (max 500), avatar_url (URI format) |
@@ -104,7 +105,7 @@
 #### タイムラインフィード
 
 | フロント側 | バックエンド側 | 整合性 | 備考 |
-|----------|--|--|--|
+| -- | -- | -- | -- |
 | `GET /posts?limit=20&offset=0` | Post list (pagination) | ✅ | limit: max 100, offset: デフォルト 0 |
 | 無限スクロール実装 | Pagination 対応 | ✅ | フロント側で offset 管理 |
 | user_id filter | `?user_id={id}` | ✅ | 特定ユーザーの投稿フィルター |
@@ -113,7 +114,7 @@
 #### 投稿作成
 
 | フロント側 | バックエンド側 | 整合性 | 備考 |
-|----------|--|--|--|
+| -- | -- | -- | -- |
 | `POST /posts` (content, image_urls) | Post creation | ✅ | content: 必須, 1-5000 文字、image_urls: 最大 10 件 |
 | 認証必須 | Authorization header / Cookie | ✅ | |
 | Input validation | Server-side validation | ✅ | XSS 防止 |
@@ -122,7 +123,7 @@
 #### 投稿削除
 
 | フロント側 | バックエンド側 | 整合性 | 備考 |
-|----------|--|--|--|
+| -- | -- | -- | -- |
 | `DELETE /posts/{id}` | Post deletion | ✅ | 投稿者のみ削除可（403 if not owner） |
 | 204 No Content | 削除成功 | ✅ | |
 | Soft delete | deleted_at column | ✅ | バックエンド実装（フロント側は見えない） |
@@ -134,13 +135,13 @@
 #### コメント表示
 
 | フロント側 | バックエンド側 | 整合性 | 備考 |
-|----------|--|--|--|
+| -- | -- | -- | -- |
 | `GET /posts/{id}` に comments 含まれる | Post detail に comments | ✅ | Comment schema: { id, post_id, user, content, created_at, updated_at } |
 
 #### コメント追加
 
 | フロント側 | バックエンド側 | 整合性 | 備考 |
-|----------|--|--|--|
+| -- | -- | -- | -- |
 | `POST /posts/{id}/comments` (content) | Comment creation | ✅ | content: 必須, 1-1000 文字 |
 | 認証必須 | Authorization / Cookie | ✅ | |
 | 201 Created | Comment response | ✅ | 作成されたコメントを返却 |
@@ -148,7 +149,7 @@
 #### コメント削除
 
 | フロント側 | バックエンド側 | 整合性 | 備考 |
-|----------|--|--|--|
+| -- | -- | -- | -- |
 | `DELETE /posts/{post_id}/comments/{comment_id}` | Comment deletion | ✅ | コメント投稿者のみ削除可 |
 | 204 No Content | 削除成功 | ✅ | |
 
@@ -209,7 +210,7 @@ interface ApiError {
 ### 4.1 Web Client (Session-based)
 
 | 項目 | バックエンド | フロント | 整合性 |
-|------|--|--|--|
+| -- | -- | -- | -- |
 | Cookie HttpOnly | ✅ 設定 | - | ✅ |
 | Cookie Secure | ✅ 本番環境 | - | ✅ |
 | Cookie SameSite=Strict | ✅ 設定 | - | ✅ |
@@ -222,6 +223,7 @@ interface ApiError {
 ### 4.2 Environment Variables（バックエンド要求）
 
 **バックエンド側要求**:
+
 ```
 DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD
 REDIS_URL
@@ -232,6 +234,7 @@ JWT_SECRET, SESSION_SECRET
 **フロント側不要**: ✅ (サーバー側で管理)
 
 **フロント側設定**:
+
 ```
 VITE_API_URL=http://localhost:8080/v1
 VITE_OAUTH_CLIENT_ID (テスト用のみ、通常はバックエンド管理)
@@ -255,6 +258,7 @@ sessions:    Active user sessions (also in Redis)
 ```
 
 **フロント側対応**:
+
 - User: ✅ UserProfile コンポーネントで表示
 - Post: ✅ PostCard, PostList で表示
 - Comment: ✅ CommentSection で表示
@@ -269,7 +273,8 @@ sessions:    Active user sessions (also in Redis)
 **バックエンド**: snake_case (`created_at`, `user_id`)  
 **フロント**: camelCase (TypeScript/React 慣例)
 
-**対策**: ✅ 
+**対策**: ✅
+
 ```typescript
 // API レスポンスを受け取った時点で変換
 interface Post {
@@ -373,7 +378,7 @@ class ErrorHandler {
 ### 8.1 総合評価
 
 | 項目 | 評価 | 理由 |
-|------|------|------|
+| -- | -- | -- |
 | API エンドポイント | ✅ 100% | 全て swagger.yaml に対応 |
 | 認証フロー | ✅ 100% | セッション cookie 完全対応 |
 | データフォーマット | ✅ 95% | snake_case/camelCase マッピング必要 |
@@ -384,7 +389,7 @@ class ErrorHandler {
 ### 8.2 残存リスク・対策
 
 | リスク | 確率 | 影響度 | 対策 |
-|--------|------|--------|------|
+| -- | -- | -- | -- |
 | バックエンド API 仕様変更 | 低 | 高 | 定期的な swagger.yaml 確認 |
 | セッション Cookie ブラウザ対応 | 低 | 中 | ブラウザテスト（Chrome, Firefox, Safari） |
 | API レート制限 | 中 | 中 | フロント side でレート制限実装 |
@@ -414,4 +419,3 @@ class ErrorHandler {
 **確認者**: TBD  
 **確認日**: TBD  
 **承認状況**: 暫定承認（バックエンド最終確認待ち）
-

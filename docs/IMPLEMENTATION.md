@@ -1672,7 +1672,7 @@ export class FaviconGenerator {
 }
 ```
 
-#### Hook で使用
+#### 実装例（Hook での使用）
 
 ```typescript
 // src/hooks/useNotificationBadge.ts

@@ -18,12 +18,14 @@ architecture: "Component-driven with custom hooks"
 ## Git & GitHub Workflow
 
 **IMPORTANT**: Always use GitHub CLI (`gh` command) for GitHub operations.
+
 - Do NOT use GitLens or other UI tools
 - Use `gh pr create`, `gh pr view`, `gh pr merge` for PR operations
 - Use `gh issue create`, `gh issue list` for issue management
 - See `.agent.md` "Git & GitHub CLI Workflow" section for detailed commands
 
 Examples:
+
 ```bash
 gh pr create --base develop --head feat/new-component
 gh pr view 5
@@ -62,6 +64,7 @@ gh issue create --title "Bug: Login fails"
 ## Backend Integration
 
 ### API Specifications
+
 - **Base URL**: `http://localhost:8080/v1` (dev) / `https://api.fuju.local/v1` (prod)
 - **認証方式**:
   - Web: Session Cookie (HttpOnly, Secure)
@@ -69,6 +72,7 @@ gh issue create --title "Bug: Login fails"
   - OAuth2: Google, GitHub providers
 
 ### Key Endpoints (swagger.yaml より)
+
 - `POST /auth/oauth/authorize`: OAuth2 認可開始
 - `POST /auth/oauth/callback`: OAuth2 コールバック
 - `POST /auth/refresh`: JWT リフレッシュ（モバイル）
@@ -84,6 +88,7 @@ gh issue create --title "Bug: Login fails"
 - `DELETE /posts/{post_id}/comments/{comment_id}`: コメント削除
 
 ### Domain Models
+
 ```typescript
 interface User {
   id: number;
@@ -131,12 +136,14 @@ interface Comment {
 ## Communication Patterns
 
 ### When Starting a Task
+
 1. `.agent.md` と `.claude` を確認
 2. バックエンド API 仕様（swagger.yaml）を参照
 3. 既存コンポーネント / フック を確認
 4. 計画を立て、Git ブランチを作成
 
 ### Code Changes
+
 1. TypeScript 型を厳密に定義
 2. コンポーネント / カスタムフック を分離
 3. テストを書く（80%+ カバレッジ）
@@ -144,6 +151,7 @@ interface Comment {
 5. GitHub CLI で PR 作成
 
 ### Documentation
+
 - ドキュメント更新時は日本語で簡潔に
 - コード例は英語のままで OK
 - コミットメッセージ・PR タイトルは英語

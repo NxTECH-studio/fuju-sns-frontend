@@ -314,7 +314,7 @@ src/types/
     ↓
 [Backend returns: {redirect_url: "..."}]
     ↓
-[Frontend: window.location.href = redirect_url]
+[Frontend: globalThis.location.href = redirect_url]
     ↓
 [User authenticates at Google]
     ↓

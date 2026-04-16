@@ -1293,6 +1293,509 @@ const withRetry = async <T,>(
 
 ---
 
-**キャッシング・非機能要件**: ✅ 確定版  
-**実装予定フェーズ**: フェーズ 3-4 で段階的実装
+## 15. Service Worker とオフラインモード
+
+### 15.1 Service Worker の役割
+
+**目的**: ネットワーク断時にキャッシュされたコンテンツを提供、ユーザー操作を一時保存
+
+### 15.2 実装パターン
+
+#### Service Worker 登録
+
+```typescript
+// src/utils/serviceWorkerRegister.ts
+export const registerServiceWorker = async () => {
+  if (!('serviceWorker' in navigator)) {
+    console.warn('Service Workers not supported');
+    return;
+  }
+
+  try {
+    const registration = await navigator.serviceWorker.register('/sw.js', {
+      scope: '/',
+    });
+    console.log('Service Worker registered:', registration);
+
+    // Listen for updates
+    registration.addEventListener('updatefound', () => {
+      const newWorker = registration.installing;
+      if (newWorker) {
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'activated') {
+            // New version available
+            console.log('New version available, please refresh');
+          }
+        });
+      }
+    });
+  } catch (err) {
+    console.error('Service Worker registration failed:', err);
+  }
+};
+
+// src/main.tsx
+if (import.meta.env.PROD) {
+  registerServiceWorker();
+}
+```
+
+#### Service Worker ファイル (public/sw.js)
+
+```javascript
+const CACHE_NAME = 'fuju-v1';
+const OFFLINE_URL = '/offline.html';
+
+// Install: キャッシュ準備
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll([
+        '/',
+        '/offline.html',
+        '/index.html',
+        '/css/styles.css',
+      ]);
+    })
+  );
+  self.skipWaiting(); // 即座にアクティベート
+});
+
+// Activate: 古いキャッシュ削除
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((names) => {
+      return Promise.all(
+        names
+          .filter((name) => name !== CACHE_NAME)
+          .map((name) => caches.delete(name))
+      );
+    })
+  );
+  self.clients.claim();
+});
+
+// Fetch: ネットワーク優先、失敗時キャッシュ
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        // レスポンスをキャッシュ
+        const cloned = response.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, cloned);
+        });
+        return response;
+      })
+      .catch(() => {
+        // ネットワーク失敗時: キャッシュから取得
+        return caches.match(event.request).then((cached) => {
+          if (cached) return cached;
+          // キャッシュもない場合: offline.html を返す
+          return caches.match(OFFLINE_URL);
+        });
+      })
+  );
+});
+```
+
+### 15.3 オフラインモード UI
+
+#### オフライン検出 Hook
+
+```typescript
+// src/hooks/useOnlineStatus.ts
+const useOnlineStatus = () => {
+  const [isOnline, setIsOnline] = React.useState(navigator.onLine);
+
+  React.useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  return isOnline;
+};
+```
+
+#### オフラインバナーコンポーネント
+
+```typescript
+// src/components/OfflineBanner.tsx
+const OfflineBanner: FC = () => {
+  const isOnline = useOnlineStatus();
+
+  if (isOnline) return null;
+
+  return (
+    <div className="offline-banner" role="alert">
+      <div className="offline-banner-icon">📶</div>
+      <div className="offline-banner-content">
+        <h3>オフラインモード</h3>
+        <p>キャッシュされたデータのみ表示されます。ネットワークに接続してください。</p>
+      </div>
+    </div>
+  );
+};
+```
+
+#### CSS
+
+```css
+.offline-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--color-warning);
+  color: var(--color-text-on-warning);
+  padding: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  z-index: 1000;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+```
+
+### 15.4 操作キューイング（オフライン時の保存）
+
+```typescript
+// src/services/offlineQueue.ts
+interface QueuedAction {
+  id: string;
+  type: 'CREATE_POST' | 'DELETE_POST' | 'ADD_COMMENT';
+  payload: Record<string, any>;
+  timestamp: number;
+  retries: number;
+}
+
+class OfflineQueue {
+  private queue: QueuedAction[] = [];
+  private storageKey = 'offline-queue';
+
+  constructor() {
+    // LocalStorage から復元
+    const stored = localStorage.getItem(this.storageKey);
+    if (stored) {
+      this.queue = JSON.parse(stored);
+    }
+  }
+
+  add(action: Omit<QueuedAction, 'id' | 'timestamp' | 'retries'>) {
+    const queued: QueuedAction = {
+      ...action,
+      id: `${action.type}-${Date.now()}`,
+      timestamp: Date.now(),
+      retries: 0,
+    };
+    this.queue.push(queued);
+    this.persist();
+    console.log(`[Offline Queue] Added: ${queued.id}`);
+  }
+
+  async sync() {
+    if (!navigator.onLine) return;
+
+    const failed: QueuedAction[] = [];
+
+    for (const action of this.queue) {
+      try {
+        await this.executeAction(action);
+        console.log(`[Offline Queue] Synced: ${action.id}`);
+      } catch (err) {
+        action.retries++;
+        if (action.retries < 3) {
+          failed.push(action);
+        }
+      }
+    }
+
+    this.queue = failed;
+    this.persist();
+  }
+
+  private async executeAction(action: QueuedAction) {
+    switch (action.type) {
+      case 'CREATE_POST':
+        return apiClient.post('/posts', action.payload);
+      case 'DELETE_POST':
+        return apiClient.delete(`/posts/${action.payload.postId}`);
+      case 'ADD_COMMENT':
+        return apiClient.post(
+          `/posts/${action.payload.postId}/comments`,
+          action.payload.comment
+        );
+      default:
+        throw new Error(`Unknown action type: ${action.type}`);
+    }
+  }
+
+  private persist() {
+    localStorage.setItem(this.storageKey, JSON.stringify(this.queue));
+  }
+}
+
+export const offlineQueue = new OfflineQueue();
+
+// 接続復帰時に自動 sync
+window.addEventListener('online', () => {
+  offlineQueue.sync();
+});
+```
+
+#### Hook で使用
+
+```typescript
+// src/hooks/useCreatePost.ts
+const useCreatePost = () => {
+  const createPost = async (content: string, images: string[]) => {
+    const isOnline = navigator.onLine;
+
+    if (!isOnline) {
+      // オフライン時: キューに保存
+      offlineQueue.add({
+        type: 'CREATE_POST',
+        payload: { content, image_urls: images },
+      });
+      return { id: `temp-${Date.now()}`, content, image_urls: images };
+    }
+
+    // オンライン時: 通常の API 呼び出し
+    return apiClient.post('/posts', { content, image_urls: images });
+  };
+
+  return { createPost };
+};
+```
+
+---
+
+## 16. 動的 Favicon による通知表示
+
+### 16.1 目的
+
+ブラウザタブのアイコン（Favicon）を動的に生成し、未読通知の数を視覚的に表示
+
+### 16.2 実装パターン
+
+#### Canvas を使った Favicon 生成
+
+```typescript
+// src/utils/faviconGenerator.ts
+interface FaviconOptions {
+  count: number;
+  hasNotification: boolean;
+  size?: number;
+}
+
+export class FaviconGenerator {
+  private static defaultSize = 32;
+  private static defaultColor = '#ff6b6b'; // 赤
+
+  /**
+   * Canvas で動的に Favicon を生成
+   */
+  static generate(options: FaviconOptions): string {
+    const { count, hasNotification, size = this.defaultSize } = options;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+
+    const ctx = canvas.getContext('2d')!;
+
+    // 背景（デフォルト Favicon または白背景）
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, size, size);
+
+    // 通知がある場合: 赤いバッジ
+    if (hasNotification && count > 0) {
+      // バッジ背景（右下バージョン）
+      const badgeSize = Math.ceil(size * 0.4);
+      const badgeX = size - badgeSize;
+      const badgeY = size - badgeSize;
+
+      ctx.fillStyle = this.defaultColor;
+      ctx.beginPath();
+      ctx.arc(
+        badgeX + badgeSize / 2,
+        badgeY + badgeSize / 2,
+        badgeSize / 2,
+        0,
+        2 * Math.PI
+      );
+      ctx.fill();
+
+      // バッジ内の数字
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${Math.ceil(badgeSize * 0.6)}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      const displayCount = count > 99 ? '99+' : String(count);
+      ctx.fillText(
+        displayCount,
+        badgeX + badgeSize / 2,
+        badgeY + badgeSize / 2
+      );
+    }
+
+    // Canvas を Data URL に変換
+    return canvas.toDataURL('image/png');
+  }
+
+  /**
+   * Favicon を DOM に適用
+   */
+  static apply(dataUrl: string) {
+    let link = document.querySelector(
+      'link[rel="icon"]'
+    ) as HTMLLinkElement | null;
+
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      link.type = 'image/png';
+      document.head.appendChild(link);
+    }
+
+    link.href = dataUrl;
+  }
+}
+```
+
+#### Hook で使用
+
+```typescript
+// src/hooks/useNotificationBadge.ts
+interface NotificationState {
+  unreadCount: number;
+  hasNotification: boolean;
+}
+
+const useNotificationBadge = () => {
+  const [notificationState, setNotificationState] =
+    React.useState<NotificationState>({
+      unreadCount: 0,
+      hasNotification: false,
+    });
+
+  // 通知状態を取得
+  React.useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await apiClient.get('/notifications');
+        const unreadCount = response.data.filter(
+          (n: any) => !n.read
+        ).length;
+        setNotificationState({
+          unreadCount,
+          hasNotification: unreadCount > 0,
+        });
+      } catch (err) {
+        console.error('Failed to fetch notifications:', err);
+      }
+    };
+
+    fetchNotifications();
+
+    // 定期的に更新（30 秒ごと）
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Favicon を更新
+  React.useEffect(() => {
+    const faviconUrl = FaviconGenerator.generate({
+      count: notificationState.unreadCount,
+      hasNotification: notificationState.hasNotification,
+    });
+    FaviconGenerator.apply(faviconUrl);
+  }, [notificationState]);
+
+  return notificationState;
+};
+```
+
+#### App での使用
+
+```typescript
+// src/App.tsx
+const App: FC = () => {
+  const { unreadCount } = useNotificationBadge();
+
+  return (
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/profile" element={<Profile />} />
+        {/* ... */}
+      </Routes>
+      {unreadCount > 0 && (
+        <NotificationIndicator count={unreadCount} />
+      )}
+    </Layout>
+  );
+};
+```
+
+### 16.3 ブラウザ互換性
+
+| ブラウザ | Canvas Favicon | Service Worker | オフライン対応 |
+|---|---|---|---|
+| Chrome 90+ | ✅ | ✅ | ✅ |
+| Firefox 88+ | ✅ | ✅ | ✅ |
+| Safari 15+ | ✅ | ✅ | ✅ |
+| Edge 90+ | ✅ | ✅ | ✅ |
+
+### 16.4 パフォーマンス最適化
+
+```typescript
+// Favicon 更新を debounce（連続更新を防ぐ）
+const useNotificationBadgeOptimized = () => {
+  const [state, setState] = React.useState<NotificationState>({
+    unreadCount: 0,
+    hasNotification: false,
+  });
+  const timeoutRef = React.useRef<NodeJS.Timeout>();
+
+  const updateState = React.useCallback((newState: NotificationState) => {
+    // 前回の更新をキャンセル
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+    // 300ms 後に Favicon を更新
+    timeoutRef.current = setTimeout(() => {
+      setState(newState);
+      const faviconUrl = FaviconGenerator.generate(newState);
+      FaviconGenerator.apply(faviconUrl);
+    }, 300);
+  }, []);
+
+  return { updateState, state };
+};
+```
+
+---
+
+**キャッシング・非機能要件・オフライン対応**: ✅ 確定版  
+**実装予定フェーズ**: フェーズ 2-4 で段階的実装
 

@@ -1,0 +1,163 @@
+# Claude AI Configuration for FUJU Frontend
+
+## Language Preference
+
+```yaml
+language: "ja"  # 日本語
+```
+
+## Context
+
+```yaml
+project_name: "FUJU Frontend"
+project_type: "React + TypeScript Web Application"
+framework: "Vite + React 19"
+architecture: "Component-driven with custom hooks"
+```
+
+## Git & GitHub Workflow
+
+**IMPORTANT**: Always use GitHub CLI (`gh` command) for GitHub operations.
+- Do NOT use GitLens or other UI tools
+- Use `gh pr create`, `gh pr view`, `gh pr merge` for PR operations
+- Use `gh issue create`, `gh issue list` for issue management
+- See `.agent.md` "Git & GitHub CLI Workflow" section for detailed commands
+
+Examples:
+```bash
+gh pr create --base develop --head feat/new-component
+gh pr view 5
+gh pr merge 5 --squash
+gh issue create --title "Bug: Login fails"
+```
+
+## Guidelines for AI
+
+- **応答言語**: 日本語で応答してください
+- **コード変数・関数名**: 英語を保持してください（TypeScript命名規約）
+- **コメント**: コード内のコメントは英語で統一（国際対応）
+- **ドキュメント**: 日本語と英語の混在は避け、コンテキストに合わせてください
+- **エラーメッセージ**: 英語で統一
+- **コミットメッセージ**: 英語の型式（feat/fix/docs等）を使用
+- **テストケース**: 英語の関数名で統一
+
+## Output Format
+
+- **コード**: TypeScript/React 言語規則に従う
+- **ドキュメント**: markdown形式、日本語で簡潔に
+- **エラーハンドリング**: 完全に実装し、エラーケースを記載
+- **テスト**: サンプル実装を含める
+
+## Key Principles
+
+1. **TypeScript型安全性**: 厳密な型チェック、no implicit any
+2. **React ベストプラクティス**: 関数型コンポーネント、FC<Props>、カスタムフック
+3. **テストカバレッジ**: 80%以上必須
+4. **エラーハンドリング**: 完全実装、UI に適切に反映
+5. **API 統合**: バックエンド swagger.yaml との整合性
+6. **セキュリティ**: HttpOnly Cookie、JWT トークン管理
+7. **レスポンシブデザイン**: モバイルファースト
+8. **CSS**: CSS変数、CSS Modules を活用
+
+## Backend Integration
+
+### API Specifications
+- **Base URL**: `http://localhost:8080/v1` (dev) / `https://api.fuju.local/v1` (prod)
+- **認証方式**:
+  - Web: Session Cookie (HttpOnly, Secure)
+  - Mobile: JWT Bearer Token
+  - OAuth2: Google, GitHub providers
+
+### Key Endpoints (swagger.yaml より)
+- `POST /auth/oauth/authorize`: OAuth2 認可開始
+- `POST /auth/oauth/callback`: OAuth2 コールバック
+- `POST /auth/refresh`: JWT リフレッシュ（モバイル）
+- `POST /auth/logout`: ログアウト
+- `GET /users`: ユーザーリスト（ページネーション）
+- `POST /users`: ユーザープロフィール作成
+- `GET /users/{id}`: ユーザー詳細
+- `PUT /users/{id}`: プロフィール更新
+- `GET /posts`: タイムラインフィード
+- `POST /posts`: ポスト作成
+- `DELETE /posts/{id}`: ポスト削除
+- `POST /posts/{id}/comments`: コメント追加
+- `DELETE /posts/{post_id}/comments/{comment_id}`: コメント削除
+
+### Domain Models
+```typescript
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  display_name: string;
+  bio: string;
+  avatar_url: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Post {
+  id: number;
+  user: User;
+  content: string;
+  image_urls: string[];
+  likes_count: number;
+  comments_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Comment {
+  id: number;
+  post_id: number;
+  user: User;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+```
+
+## Reference Files
+
+- `.agent.md`: AI 開発ガイドライン（必読）、Git & GitHub CLI Workflow セクション参照
+- `src/types/`: TypeScript 型定義
+- `src/hooks/`: カスタムフック（API 統合、状態管理）
+- `src/components/`: React コンポーネント
+- `package.json`: 依存関係、build スクリプト
+- `tsconfig.json`: TypeScript 設定
+- `eslint.config.js`: ESLint 設定
+- バックエンド `.agent.md`: Clean Architecture, エラーハンドリング参考
+
+## Communication Patterns
+
+### When Starting a Task
+1. `.agent.md` と `.claude` を確認
+2. バックエンド API 仕様（swagger.yaml）を参照
+3. 既存コンポーネント / フック を確認
+4. 計画を立て、Git ブランチを作成
+
+### Code Changes
+1. TypeScript 型を厳密に定義
+2. コンポーネント / カスタムフック を分離
+3. テストを書く（80%+ カバレッジ）
+4. `npm run lint:fix && npm run format` で自動修正
+5. GitHub CLI で PR 作成
+
+### Documentation
+- ドキュメント更新時は日本語で簡潔に
+- コード例は英語のままで OK
+- コミットメッセージ・PR タイトルは英語
+
+## Environment Variables
+
+```env
+VITE_API_URL=http://localhost:8080/v1
+VITE_OAUTH_CLIENT_ID=<client_id>
+VITE_OAUTH_REDIRECT_URI=http://localhost:5173/auth/callback
+VITE_ENVIRONMENT=development
+```
+
+---
+
+**Last Updated**: 2026-04-16
+**Version**: 1.0

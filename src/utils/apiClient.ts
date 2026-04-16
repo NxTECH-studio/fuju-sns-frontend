@@ -12,8 +12,8 @@ export interface ApiClientOptions {
 }
 
 export class ApiClient {
-  private baseUrl: string;
-  private timeout: number;
+  private readonly baseUrl: string;
+  private readonly timeout: number;
 
   constructor(options?: ApiClientOptions) {
     this.baseUrl = options?.baseUrl || API_BASE_URL;

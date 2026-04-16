@@ -17,7 +17,7 @@ export const AuthGuard: FC<AuthGuardProps> = ({ children }) => {
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       // 未認証の場合はログイン画面へリダイレクト
-      window.location.href = '/login';
+      globalThis.location.href = '/login';
     }
   }, [isAuthenticated, isLoading]);
 

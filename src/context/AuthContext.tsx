@@ -4,11 +4,10 @@
  */
 
 import React, { type FC, type ReactNode } from 'react';
-import type { User } from '../types';
 import { apiClient } from '../utils/apiClient';
 import { ErrorHandler } from '../utils/errorHandler';
 import { IS_DEVELOPMENT } from '../utils/constants';
-import type { OAuthAuthorizeRequest, OAuthAuthorizeResponse } from '../types';
+import type { User, OAuthAuthorizeRequest, OAuthAuthorizeResponse } from '../types';
 
 export interface AuthContextType {
   user: User | null;
@@ -74,7 +73,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
       );
 
       // Step 2: OAuth2 プロバイダーへリダイレクト
-      window.location.href = response.redirect_url;
+      globalThis.location.href = response.redirect_url;
     } catch (error) {
       const { message } = ErrorHandler.handle(error);
       console.error('[AuthContext] Login failed:', message);
@@ -97,7 +96,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
       setUser(null);
 
       // ログイン画面へリダイレクト
-      window.location.href = '/login';
+      globalThis.location.href = '/login';
     } catch (error) {
       const { message } = ErrorHandler.handle(error);
       console.error('[AuthContext] Logout failed:', message);

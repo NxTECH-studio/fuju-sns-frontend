@@ -14,7 +14,7 @@ interface PostCardProps {
 
 export const PostCard: FC<PostCardProps> = ({ post, onDelete }) => {
   const handleDelete = () => {
-    if (onDelete && window.confirm('この投稿を削除しますか？')) {
+    if (onDelete && globalThis.confirm('この投稿を削除しますか？')) {
       onDelete(post.id);
     }
   };

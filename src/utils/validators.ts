@@ -43,7 +43,7 @@ export class Validators {
     }
 
     // アルファベット、数字、アンダースコアのみ
-    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+    if (!/^\w+$/.test(username)) {
       return {
         field: 'username',
         message: 'ユーザー名はアルファベット、数字、アンダースコアのみ使用可能です',

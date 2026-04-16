@@ -453,7 +453,7 @@ const LoginPage = () => {
         redirect_uri: import.meta.env.VITE_OAUTH_REDIRECT_URI,
       });
       // ユーザーを OAuth2 プロバイダーへリダイレクト
-      window.location.href = response.redirect_url;
+      globalThis.location.href = response.redirect_url;
     } catch (error) {
       // エラーハンドリング
     }
@@ -465,7 +465,7 @@ const LoginPage = () => {
 // Step 2: プロバイダーからコールバック (URL: /auth/callback?code=X&state=Y)
 const AuthCallbackHandler = () => {
   React.useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(globalThis.location.search);
     const code = params.get('code');
     const state = params.get('state');
 
@@ -480,11 +480,11 @@ const AuthCallbackHandler = () => {
         .then(() => {
           // セッションクッキーが自動設定される
           // ダッシュボードへリダイレクト
-          window.location.href = '/dashboard';
+          globalThis.location.href = '/dashboard';
         })
         .catch((error) => {
           // エラーハンドリング
-          window.location.href = '/login?error=auth_failed';
+          globalThis.location.href = '/login?error=auth_failed';
         });
     }
   }, []);
@@ -1418,12 +1418,12 @@ const useOnlineStatus = () => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    globalThis.addEventListener('online', handleOnline);
+    globalThis.addEventListener('offline', handleOffline);
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      globalThis.removeEventListener('online', handleOnline);
+      globalThis.removeEventListener('offline', handleOffline);
     };
   }, []);
 
@@ -1558,7 +1558,7 @@ class OfflineQueue {
 export const offlineQueue = new OfflineQueue();
 
 // 接続復帰時に自動 sync
-window.addEventListener('online', () => {
+globalThis.addEventListener('online', () => {
   offlineQueue.sync();
 });
 ```

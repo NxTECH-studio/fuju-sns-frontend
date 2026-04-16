@@ -70,7 +70,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
       const authorizeRequest: OAuthAuthorizeRequest = { provider };
       const response = await apiClient.post<OAuthAuthorizeResponse>(
         '/auth/oauth/authorize',
-        authorizeRequest
+        authorizeRequest,
       );
 
       // Step 2: OAuth2 プロバイダーへリダイレクト

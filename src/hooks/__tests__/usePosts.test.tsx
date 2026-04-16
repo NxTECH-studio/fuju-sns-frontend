@@ -39,8 +39,8 @@ describe('usePosts', () => {
   });
 
   it('should handle loading state', () => {
-    vi.spyOn(apiClient, 'apiClient', 'get').mockImplementation(() => 
-      new Promise(resolve => setTimeout(resolve, 100))
+    vi.spyOn(apiClient, 'apiClient', 'get').mockImplementation(
+      () => new Promise((resolve) => setTimeout(resolve, 100)),
     );
 
     const { result } = renderHook(() => usePosts());

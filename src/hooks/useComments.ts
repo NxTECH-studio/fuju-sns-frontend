@@ -48,10 +48,9 @@ export const useComments = (postId: number): UseCommentsReturn => {
 
   const createComment = async (content: string): Promise<Comment> => {
     try {
-      const response = await apiClient.post<{ data: Comment }>(
-        `/posts/${postId}/comments`,
-        { content }
-      );
+      const response = await apiClient.post<{ data: Comment }>(`/posts/${postId}/comments`, {
+        content,
+      });
       setComments((prev) => [response.data, ...prev]);
       return response.data;
     } catch (err) {

@@ -31,7 +31,7 @@ export const usePosts = (limit: number = DEFAULT_PAGE_SIZE): UsePostsReturn => {
       setError(null);
       try {
         const response = await apiClient.get<PaginatedResponse<Post>>(
-          `/posts?limit=${limit}&offset=${offset}`
+          `/posts?limit=${limit}&offset=${offset}`,
         );
 
         if (isInitial) {
@@ -53,7 +53,7 @@ export const usePosts = (limit: number = DEFAULT_PAGE_SIZE): UsePostsReturn => {
         setIsLoading(false);
       }
     },
-    [limit, posts.length]
+    [limit, posts.length],
   );
 
   const refetch = useCallback(async () => {

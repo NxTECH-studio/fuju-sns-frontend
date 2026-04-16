@@ -34,7 +34,7 @@ export const PostList: FC<PostListProps> = ({
           onLoadMore();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     const target = observerTarget.current;
@@ -60,11 +60,7 @@ export const PostList: FC<PostListProps> = ({
   return (
     <div>
       {posts.map((post) => (
-        <PostCard
-          key={post.id}
-          post={post}
-          onDelete={onDelete}
-        />
+        <PostCard key={post.id} post={post} onDelete={onDelete} />
       ))}
 
       {/* 無限スクロール トリガー */}

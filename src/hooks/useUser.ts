@@ -45,10 +45,7 @@ export const useUser = (userId: number): UseUserReturn => {
   const updateUser = useCallback(
     async (updates: Partial<User>): Promise<User> => {
       try {
-        const response = await apiClient.put<{ data: User }>(
-          `/users/${userId}`,
-          updates
-        );
+        const response = await apiClient.put<{ data: User }>(`/users/${userId}`, updates);
         setUser(response.data);
         return response.data;
       } catch (err) {
@@ -57,7 +54,7 @@ export const useUser = (userId: number): UseUserReturn => {
         throw err;
       }
     },
-    [userId]
+    [userId],
   );
 
   return { user, isLoading, error, refetch, updateUser };

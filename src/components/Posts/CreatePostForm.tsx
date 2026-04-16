@@ -13,10 +13,7 @@ interface CreatePostFormProps {
   isLoading?: boolean;
 }
 
-export const CreatePostForm: FC<CreatePostFormProps> = ({
-  onSubmit,
-  isLoading = false,
-}) => {
+export const CreatePostForm: FC<CreatePostFormProps> = ({ onSubmit, isLoading = false }) => {
   const [content, setContent] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [images, setImages] = useState<string[]>([]);

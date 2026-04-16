@@ -43,7 +43,7 @@ export const AuthCallbackHandler: FC = () => {
 
         const response = await apiClient.post<OAuthCallbackResponse>(
           '/auth/oauth/callback',
-          callbackRequest
+          callbackRequest,
         );
 
         if (IS_DEVELOPMENT) {
@@ -87,9 +87,7 @@ export const AuthCallbackHandler: FC = () => {
             boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
           }}
         >
-          <h2 style={{ color: '#d32f2f', marginTop: 0 }}>
-            認証に失敗しました
-          </h2>
+          <h2 style={{ color: '#d32f2f', marginTop: 0 }}>認証に失敗しました</h2>
           <p style={{ color: '#666', marginBottom: '1.5rem' }}>{error}</p>
           <a
             href="/login"
@@ -133,9 +131,7 @@ export const AuthCallbackHandler: FC = () => {
             margin: '0 auto 1rem',
           }}
         />
-        <p style={{ color: '#666', fontSize: '0.875rem' }}>
-          ログイン処理を完了しています...
-        </p>
+        <p style={{ color: '#666', fontSize: '0.875rem' }}>ログイン処理を完了しています...</p>
       </div>
 
       <style>{`

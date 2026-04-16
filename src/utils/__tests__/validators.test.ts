@@ -157,17 +157,13 @@ describe('Validators', () => {
     });
 
     it('should accept up to 10 image URLs', () => {
-      const images = Array.from({ length: 10 }, (_, i) => 
-        `https://example.com/image${i}.jpg`
-      );
+      const images = Array.from({ length: 10 }, (_, i) => `https://example.com/image${i}.jpg`);
       const result = Validators.validatePostImages(images);
       expect(result).toBeNull();
     });
 
     it('should reject more than 10 images', () => {
-      const images = Array.from({ length: 11 }, (_, i) =>
-        `https://example.com/image${i}.jpg`
-      );
+      const images = Array.from({ length: 11 }, (_, i) => `https://example.com/image${i}.jpg`);
       const result = Validators.validatePostImages(images);
       expect(result).toBeTruthy();
     });

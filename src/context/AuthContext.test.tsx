@@ -34,7 +34,7 @@ describe('AuthContext', () => {
     render(
       <AuthProvider>
         <TestComponent />
-      </AuthProvider>
+      </AuthProvider>,
     );
 
     expect(screen.getByText(/Loaded/i)).toBeTruthy();

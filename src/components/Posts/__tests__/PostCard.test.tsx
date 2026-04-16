@@ -25,9 +25,7 @@ describe('PostCard', () => {
   it('should render post content', () => {
     const mockOnDelete = vi.fn();
 
-    render(
-      <PostCard post={mockPost} onDelete={mockOnDelete} />
-    );
+    render(<PostCard post={mockPost} onDelete={mockOnDelete} />);
 
     expect(screen.getByText(mockPost.displayName)).toBeInTheDocument();
     expect(screen.getByText(mockPost.content)).toBeInTheDocument();
@@ -36,9 +34,7 @@ describe('PostCard', () => {
   it('should render post metadata', () => {
     const mockOnDelete = vi.fn();
 
-    render(
-      <PostCard post={mockPost} onDelete={mockOnDelete} />
-    );
+    render(<PostCard post={mockPost} onDelete={mockOnDelete} />);
 
     // Check for like count
     expect(screen.getByText(/\d+/)).toBeInTheDocument();
@@ -47,9 +43,7 @@ describe('PostCard', () => {
   it('should render avatar image', () => {
     const mockOnDelete = vi.fn();
 
-    render(
-      <PostCard post={mockPost} onDelete={mockOnDelete} />
-    );
+    render(<PostCard post={mockPost} onDelete={mockOnDelete} />);
 
     const avatar = screen.getByRole('img', { hidden: true });
     expect(avatar).toHaveAttribute('src', mockPost.avatar);
@@ -58,14 +52,13 @@ describe('PostCard', () => {
   it('should call onDelete when delete is triggered', () => {
     const mockOnDelete = vi.fn();
 
-    const { container } = render(
-      <PostCard post={mockPost} onDelete={mockOnDelete} />
-    );
+    const { container } = render(<PostCard post={mockPost} onDelete={mockOnDelete} />);
 
     // Find delete button if exists
-    const deleteButton = container.querySelector('button[aria-label*="delete"]') || 
-                         container.querySelector('button[aria-label*="削除"]');
-    
+    const deleteButton =
+      container.querySelector('button[aria-label*="delete"]') ||
+      container.querySelector('button[aria-label*="削除"]');
+
     if (deleteButton) {
       deleteButton.click();
       expect(mockOnDelete).toHaveBeenCalledWith(mockPost.id);
@@ -80,9 +73,7 @@ describe('PostCard', () => {
 
     const mockOnDelete = vi.fn();
 
-    render(
-      <PostCard post={postWithImages} onDelete={mockOnDelete} />
-    );
+    render(<PostCard post={postWithImages} onDelete={mockOnDelete} />);
 
     // Images should be rendered
     const images = screen.getAllByRole('img');
@@ -92,9 +83,7 @@ describe('PostCard', () => {
   it('should display correct time information', () => {
     const mockOnDelete = vi.fn();
 
-    render(
-      <PostCard post={mockPost} onDelete={mockOnDelete} />
-    );
+    render(<PostCard post={mockPost} onDelete={mockOnDelete} />);
 
     // Just verify that some time-related text is rendered
     const content = screen.getByText(mockPost.content);

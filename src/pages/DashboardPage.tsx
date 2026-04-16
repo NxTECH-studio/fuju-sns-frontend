@@ -30,7 +30,7 @@ export const DashboardPage: FC = () => {
         setError(message);
       }
     },
-    [createPost, refetch]
+    [createPost, refetch],
   );
 
   const handleDelete = async (postId: number) => {
@@ -91,16 +91,12 @@ export const DashboardPage: FC = () => {
         <aside className={styles.sidebar}>
           <div className={styles.sidebarCard}>
             <h3>推奨ユーザー</h3>
-            <p style={{ color: '#999', fontSize: '0.85rem' }}>
-              Phase 2で実装予定
-            </p>
+            <p style={{ color: '#999', fontSize: '0.85rem' }}>Phase 2で実装予定</p>
           </div>
 
           <div className={styles.sidebarCard}>
             <h3>トレンド</h3>
-            <p style={{ color: '#999', fontSize: '0.85rem' }}>
-              Phase 2で実装予定
-            </p>
+            <p style={{ color: '#999', fontSize: '0.85rem' }}>Phase 2で実装予定</p>
           </div>
         </aside>
       </main>

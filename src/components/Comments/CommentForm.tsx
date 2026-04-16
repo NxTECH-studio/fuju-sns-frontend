@@ -13,10 +13,7 @@ interface CommentFormProps {
   isLoading?: boolean;
 }
 
-export const CommentForm: FC<CommentFormProps> = ({
-  onSubmit,
-  isLoading = false,
-}) => {
+export const CommentForm: FC<CommentFormProps> = ({ onSubmit, isLoading = false }) => {
   const [content, setContent] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -53,18 +50,12 @@ export const CommentForm: FC<CommentFormProps> = ({
           maxLength={1000}
           disabled={isLoading}
         />
-        <button
-          type="submit"
-          disabled={isLoading || !content.trim()}
-          className={styles.submitBtn}
-        >
+        <button type="submit" disabled={isLoading || !content.trim()} className={styles.submitBtn}>
           {isLoading ? '投稿中...' : '投稿'}
         </button>
       </div>
 
-      <div className={styles.charCount}>
-        {content.length} / 1000
-      </div>
+      <div className={styles.charCount}>{content.length} / 1000</div>
     </form>
   );
 };

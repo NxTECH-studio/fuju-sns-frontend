@@ -32,7 +32,7 @@ export class ErrorHandler {
         response.status,
         'UNKNOWN_ERROR',
         `HTTPエラー: ${response.status}`,
-        new Date().toISOString()
+        new Date().toISOString(),
       );
     }
   }
@@ -74,19 +74,13 @@ export class ErrorHandler {
    * 認証エラーの判定
    */
   static isAuthError(error: unknown): boolean {
-    return (
-      error instanceof ApiError &&
-      (error.status === 401 || error.code === 'UNAUTHORIZED')
-    );
+    return error instanceof ApiError && (error.status === 401 || error.code === 'UNAUTHORIZED');
   }
 
   /**
    * 権限エラーの判定
    */
   static isForbiddenError(error: unknown): boolean {
-    return (
-      error instanceof ApiError &&
-      (error.status === 403 || error.code === 'FORBIDDEN')
-    );
+    return error instanceof ApiError && (error.status === 403 || error.code === 'FORBIDDEN');
   }
 }

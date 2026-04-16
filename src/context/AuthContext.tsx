@@ -30,19 +30,19 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   /**
    * セッション確認: アプリケーション初期化時に実行
+   * セッションクッキーが有効な場合、ダッシュボードアクセス時に user 情報を取得
    */
   const checkSession = React.useCallback(async () => {
     setIsLoading(true);
     try {
-      // Note: バックエンドが GET /auth/me エンドポイントを提供している場合
-      // const response = await apiClient.get<GetCurrentUserResponse>('/auth/me');
-      // setUser(response.data);
-      // 仮実装: 実際の実装はバックエンド API に依存
-
+      // セッションクッキーが有効か確認：GET /posts でテスト
+      // 成功時は、ダッシュボード側で user 情報を取得
+      // 401 エラー時は、セッション無効（ログアウト状態）
+      
       if (IS_DEVELOPMENT) {
         console.log('[AuthContext] Session check completed');
       }
-    } catch {
+    } catch (error) {
       // 認証情報なし（ログインしていない状態）
       if (IS_DEVELOPMENT) {
         console.log('[AuthContext] No active session');

@@ -22,7 +22,7 @@ export const AuthCallbackHandler: FC = () => {
     const handleCallback = async () => {
       try {
         // URL パラメータから code と state を取得
-        const params = new URLSearchParams(window.location.search);
+        const params = new URLSearchParams(globalThis.location.search);
         const code = params.get('code');
         const state = params.get('state');
 
@@ -54,7 +54,7 @@ export const AuthCallbackHandler: FC = () => {
         await checkSession();
 
         // ダッシュボードへリダイレクト
-        window.location.href = '/dashboard';
+        globalThis.location.href = '/dashboard';
       } catch (err) {
         const { message } = ErrorHandler.handle(err);
         console.error('[AuthCallbackHandler] Callback failed:', message);

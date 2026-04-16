@@ -3,7 +3,7 @@
  * コメント取得・作成・削除
  */
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { apiClient } from '../utils/apiClient';
 import { ErrorHandler } from '../utils/errorHandler';
 import type { Comment } from '../types';
@@ -22,7 +22,7 @@ export const useComments = (postId: number): UseCommentsReturn => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const refetch = useCallback(async () => {
+  const refetch = async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -37,7 +37,7 @@ export const useComments = (postId: number): UseCommentsReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, [postId]);
+  };
 
   // マウント時にデータ取得
   const [initialized, setInitialized] = useState(false);
@@ -46,38 +46,31 @@ export const useComments = (postId: number): UseCommentsReturn => {
     refetch();
   }
 
-  const createComment = useCallback(
-    async (content: string): Promise<Comment> => {
-      try {
-        const response = await apiClient.post<{ data: Comment }>(
-          `/posts/${postId}/comments`,
-          { content }
-        );
-        setComments((prev) => [response.data, ...prev]);
-        return response.data;
-      } catch (err) {
-        const { message } = ErrorHandler.handle(err);
-        setError(message);
-        throw err;
-      }
-    },
-    // eslint-disable react-hooks/exhaustive-deps
-    [postId]
-  );
+  const createComment = async (content: string): Promise<Comment> => {
+    try {
+      const response = await apiClient.post<{ data: Comment }>(
+        `/posts/${postId}/comments`,
+        { content }
+      );
+      setComments((prev) => [response.data, ...prev]);
+      return response.data;
+    } catch (err) {
+      const { message } = ErrorHandler.handle(err);
+      setError(message);
+      throw err;
+    }
+  };
 
-  const deleteComment = useCallback(
-    async (commentId: number) => {
-      try {
-        await apiClient.delete(`/posts/${postId}/comments/${commentId}`);
-        setComments((prev) => prev.filter((c) => c.id !== commentId));
-      } catch (err) {
-        const { message } = ErrorHandler.handle(err);
-        setError(message);
-        throw err;
-      }
-    },
-    [postId]
-  );
+  const deleteComment = async (commentId: number) => {
+    try {
+      await apiClient.delete(`/posts/${postId}/comments/${commentId}`);
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+    } catch (err) {
+      const { message } = ErrorHandler.handle(err);
+      setError(message);
+      throw err;
+    }
+  };
 
   return { comments, isLoading, error, createComment, deleteComment, refetch };
 };

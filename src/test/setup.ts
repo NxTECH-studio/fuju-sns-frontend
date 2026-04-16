@@ -8,8 +8,8 @@ afterEach(() => {
   cleanup();
 });
 
-// Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
+// Mock globalThis.matchMedia
+Object.defineProperty(globalThis, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation((query: string) => ({
     matches: false,

@@ -107,7 +107,7 @@ const ErrorFallback: FC<{ error: Error }> = ({ error }) => {
       </div>
 
       <button
-        onClick={() => window.location.reload()}
+        onClick={() => globalThis.location.reload()}
         style={{
           padding: '0.5rem 1.5rem',
           backgroundColor: '#007bff',

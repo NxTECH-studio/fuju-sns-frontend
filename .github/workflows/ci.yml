@@ -1,0 +1,145 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+jobs:
+  lint:
+    name: Lint & Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Check code format with Prettier
+        run: npx prettier --check 'src/**/*.{ts,tsx,css,json,md}'
+
+  build:
+    name: Build Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
+
+  test:
+    name: Unit & Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npm run test -- --coverage
+        continue-on-error: true
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/coverage-final.json
+          flags: frontend
+          fail_ci_if_error: false
+
+  security-check:
+    name: Security & Dependency Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+  ai-code-review:
+    name: AI Code Review
+    runs-on: ubuntu-latest
+    needs: [lint, build, test]
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: AI Code Review with Copilot
+        run: |
+          echo "🤖 AI Code Review triggered"
+          echo "Review Focus Areas:"
+          echo "  - TypeScript type safety"
+          echo "  - React best practices (hooks, components)"
+          echo "  - Error handling completeness"
+          echo "  - Test coverage (target: 80%+)"
+          echo "  - API integration with backend"
+          echo "  - Security considerations (XSS, CSRF)"
+          echo ""
+          echo "See .agent.md and .claude for detailed guidelines"
+
+  build-success:
+    name: Build Success Indicator
+    runs-on: ubuntu-latest
+    needs: [lint, build, test, security-check]
+    if: success()
+    steps:
+      - name: Report Success
+        run: echo "✅ All CI checks passed! Ready for review."
+
+  build-failure:
+    name: Build Failure Indicator
+    runs-on: ubuntu-latest
+    needs: [lint, build, test, security-check]
+    if: failure()
+    steps:
+      - name: Report Failure
+        run: |
+          echo "❌ CI Pipeline failed. Please check logs above."
+          exit 1

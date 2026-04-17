@@ -3,23 +3,10 @@ import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
-import { defineConfig } from 'eslint/config'
+import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  {
-    ignores: [
-      'node_modules',
-      'dist',
-      'build',
-      '.vite',
-      '.cache',
-      'coverage',
-      'public',
-      'src/test',
-      'src/**/*.test.ts',
-      'src/**/*.test.tsx',
-    ],
-  },
+  globalIgnores(['dist']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

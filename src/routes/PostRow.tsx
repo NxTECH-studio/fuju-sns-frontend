@@ -1,10 +1,10 @@
-import { useCallback } from 'react';
-import type { PostVM } from '../services/vm';
-import { useLikeToggle } from '../hooks/useLikeToggle';
-import { useAuthStatus } from '../auth-component/src';
-import { PostCard } from '../ui/components/PostCard';
-import { LikeButton } from '../ui/components/LikeButton';
-import { useToast } from '../state/toastContext';
+import { useCallback } from "react";
+import type { PostVM } from "../services/vm";
+import { useLikeToggle } from "../hooks/useLikeToggle";
+import { useAuthStatus } from "../auth-component/src";
+import { PostCard } from "../ui/components/PostCard";
+import { LikeButton } from "../ui/components/LikeButton";
+import { useToast } from "../state/toastContext";
 
 interface PostRowProps {
   post: PostVM;
@@ -27,17 +27,25 @@ export function PostRow({
 }: PostRowProps) {
   const { status } = useAuthStatus();
   const toast = useToast();
-  const like = useLikeToggle(post.id, post.likedByViewer, post.likesCount, onLikeChange);
+  const like = useLikeToggle(
+    post.id,
+    post.likedByViewer,
+    post.likesCount,
+    onLikeChange
+  );
 
   const toggle = useCallback(async () => {
     try {
       await like.toggle();
     } catch (e) {
-      toast.show(e instanceof Error ? e.message : 'いいねに失敗しました', 'error');
+      toast.show(
+        e instanceof Error ? e.message : "いいねに失敗しました",
+        "error"
+      );
     }
   }, [like, toast]);
 
-  const canLike = status === 'authenticated';
+  const canLike = status === "authenticated";
 
   return (
     <PostCard

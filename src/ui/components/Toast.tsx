@@ -1,8 +1,8 @@
-import styles from './Toast.module.css';
+import styles from "./Toast.module.css";
 
 export interface ToastItem {
   id: string;
-  kind: 'info' | 'success' | 'error';
+  kind: "info" | "success" | "error";
   message: string;
 }
 
@@ -19,7 +19,7 @@ export function ToastStack({ items, onDismiss }: ToastStackProps) {
         <button
           key={t.id}
           type="button"
-          className={[styles.item, styles[t.kind]].join(' ')}
+          className={[styles.item, styles[t.kind]].join(" ")}
           onClick={() => onDismiss(t.id)}
         >
           {t.message}

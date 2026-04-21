@@ -1,5 +1,5 @@
-import type { FujuClient } from '../client';
-import type { PostListResponse, ULID } from '../types';
+import type { FujuClient } from "../client";
+import type { PostListResponse, ULID } from "../types";
 
 export interface TimelineQuery {
   cursor?: string;
@@ -9,9 +9,9 @@ export interface TimelineQuery {
 export function timelinesHome(
   client: FujuClient,
   q: TimelineQuery = {},
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<PostListResponse> {
-  return client.get<PostListResponse>('/timeline/home', {
+  return client.get<PostListResponse>("/timeline/home", {
     signal,
     query: { cursor: q.cursor, limit: q.limit },
   });
@@ -20,9 +20,9 @@ export function timelinesHome(
 export function timelinesGlobal(
   client: FujuClient,
   q: TimelineQuery = {},
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<PostListResponse> {
-  return client.get<PostListResponse>('/timeline/global', {
+  return client.get<PostListResponse>("/timeline/global", {
     signal,
     query: { cursor: q.cursor, limit: q.limit },
   });
@@ -32,10 +32,13 @@ export function timelinesUser(
   client: FujuClient,
   sub: ULID,
   q: TimelineQuery = {},
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<PostListResponse> {
-  return client.get<PostListResponse>(`/timeline/user/${encodeURIComponent(sub)}`, {
-    signal,
-    query: { cursor: q.cursor, limit: q.limit },
-  });
+  return client.get<PostListResponse>(
+    `/timeline/user/${encodeURIComponent(sub)}`,
+    {
+      signal,
+      query: { cursor: q.cursor, limit: q.limit },
+    }
+  );
 }

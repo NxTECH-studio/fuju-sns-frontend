@@ -1,30 +1,31 @@
-import { useNavigate } from 'react-router';
-import { useTimeline } from '../hooks/useTimeline';
-import { useMe } from '../hooks/useMe';
-import { useAuthStatus } from '../auth-component/src';
-import { usePostActions } from '../hooks/usePostActions';
-import { useToast } from '../state/toastContext';
-import { PostRow } from './PostRow';
-import { ComposerBox } from './ComposerBox';
-import { Pager } from '../ui/components/Pager';
-import { EmptyState } from '../ui/components/EmptyState';
-import { Button } from '../ui/primitives/Button';
+import { useNavigate } from "react-router";
+import { useTimeline } from "../hooks/useTimeline";
+import { useMe } from "../hooks/useMe";
+import { useAuthStatus } from "../auth-component/src";
+import { usePostActions } from "../hooks/usePostActions";
+import { useToast } from "../state/toastContext";
+import { PostRow } from "./PostRow";
+import { ComposerBox } from "./ComposerBox";
+import { Pager } from "../ui/components/Pager";
+import { EmptyState } from "../ui/components/EmptyState";
+import { ErrorMessage } from "../ui/components/ErrorMessage";
+import { Button } from "../ui/primitives/Button";
 
 export function HomeTimelineRoute() {
   const navigate = useNavigate();
   const { status } = useAuthStatus();
   const me = useMe();
-  const timeline = useTimeline('home');
+  const timeline = useTimeline("home");
   const actions = usePostActions();
   const toast = useToast();
 
-  if (status !== 'authenticated') {
+  if (status !== "authenticated") {
     return (
       <EmptyState
         title="ログインが必要です"
         description="Home timeline はフォローしている人の投稿を表示します。"
         action={
-          <Button variant="primary" onClick={() => navigate('/login')}>
+          <Button variant="primary" onClick={() => navigate("/login")}>
             ログイン
           </Button>
         }
@@ -32,7 +33,7 @@ export function HomeTimelineRoute() {
     );
   }
 
-  const meSub = me.status === 'ready' ? me.me.sub : null;
+  const meSub = me.status === "ready" ? me.me.sub : null;
 
   const handleCreate = async (input: {
     content: string;
@@ -45,33 +46,38 @@ export function HomeTimelineRoute() {
       parent_post_id: input.parentPostId ?? null,
     });
     timeline.prepend(vm);
-    toast.show('投稿しました', 'success');
+    toast.show("投稿しました", "success");
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('この投稿を削除しますか？')) return;
+    if (!window.confirm("この投稿を削除しますか？")) return;
     try {
       await actions.remove(id);
       timeline.removeById((p) => p.id === id);
-      toast.show('投稿を削除しました', 'success');
+      toast.show("投稿を削除しました", "success");
     } catch (e) {
-      toast.show(e instanceof Error ? e.message : '削除に失敗しました', 'error');
+      toast.show(
+        e instanceof Error ? e.message : "削除に失敗しました",
+        "error"
+      );
     }
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <h1>Home</h1>
       <ComposerBox onSubmit={handleCreate} />
       {timeline.loading ? (
         <p>読み込み中...</p>
       ) : timeline.error ? (
-        <p style={{ color: '#d33' }}>エラー: {timeline.error}</p>
+        <ErrorMessage message={timeline.error} />
       ) : timeline.items.length === 0 ? (
         <EmptyState
           title="まだ投稿がありません"
           description="誰かをフォローするか、Global タイムラインをのぞいてみてください。"
-          action={<Button onClick={() => navigate('/global')}>Global を見る</Button>}
+          action={
+            <Button onClick={() => navigate("/global")}>Global を見る</Button>
+          }
         />
       ) : (
         <>
@@ -81,12 +87,18 @@ export function HomeTimelineRoute() {
               post={p}
               meSub={meSub}
               onOpen={() => navigate(`/posts/${p.id}`)}
-              onOpenAuthor={p.author ? () => navigate(`/users/${p.author!.sub}`) : undefined}
+              onOpenAuthor={
+                p.author ? () => navigate(`/users/${p.author!.sub}`) : undefined
+              }
               onDelete={() => void handleDelete(p.id)}
               onLikeChange={(next) =>
                 timeline.updateById(
                   (x) => x.id === p.id,
-                  (x) => ({ ...x, likedByViewer: next.liked, likesCount: next.count }),
+                  (x) => ({
+                    ...x,
+                    likedByViewer: next.liked,
+                    likesCount: next.count,
+                  })
                 )
               }
             />

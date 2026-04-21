@@ -1,7 +1,10 @@
-import { useState } from 'react';
-import { useImages } from '../hooks/useImages';
-import { useToast } from '../state/toastContext';
-import { PostComposer } from '../ui/components/PostComposer';
+import { useState } from "react";
+import { useImages } from "../hooks/useImages";
+import { useToast } from "../state/toastContext";
+import { PostComposer } from "../ui/components/PostComposer";
+import { ImageUploader } from "../ui/components/ImageUploader";
+
+const MAX_ATTACHED_IMAGES = 4;
 
 interface ComposerBoxProps {
   placeholder?: string;
@@ -13,70 +16,63 @@ interface ComposerBoxProps {
   }) => Promise<void>;
 }
 
-// Wraps PostComposer with image-attach behaviour. Keeps PostComposer UI pure
-// (no fetch) by doing uploads here and passing IDs down as props.
-export function ComposerBox({ placeholder, parentPostId, onSubmit }: ComposerBoxProps) {
+// Wraps PostComposer with image-attach behaviour. Keeps PostComposer UI
+// pure (no fetch) by doing uploads here and passing IDs down as props.
+export function ComposerBox({
+  placeholder,
+  parentPostId,
+  onSubmit,
+}: ComposerBoxProps) {
   const images = useImages();
   const toast = useToast();
   const [attached, setAttached] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
 
-  const handleAttach = async () => {
-    if (images.unavailable) {
-      toast.show('画像機能は現在無効です', 'error');
+  const handleSelectFile = async (file: File) => {
+    if (busy) return;
+    if (attached.length >= MAX_ATTACHED_IMAGES) {
+      toast.show(`画像は最大 ${MAX_ATTACHED_IMAGES} 件まで`, "error");
       return;
     }
-    if (attached.length >= 4) {
-      toast.show('画像は最大 4 件まで', 'error');
-      return;
+    setBusy(true);
+    try {
+      const vm = await images.upload(file);
+      setAttached((prev) => [...prev, vm.id]);
+    } catch (e) {
+      toast.show(
+        e instanceof Error ? e.message : "アップロードに失敗しました",
+        "error"
+      );
+    } finally {
+      setBusy(false);
     }
-    pickAndUpload();
   };
 
-  const pickAndUpload = (): void => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = async () => {
-      const file = input.files?.[0];
-      if (!file) return;
-      setBusy(true);
-      try {
-        const vm = await images.upload(file);
-        setAttached((prev) => [...prev, vm.id]);
-      } catch (e) {
-        toast.show(e instanceof Error ? e.message : 'アップロードに失敗しました', 'error');
-      } finally {
-        setBusy(false);
-      }
-    };
-    input.click();
-  };
-
-  const handleSubmit = async (input: {
-    content: string;
-    imageIds?: string[];
-    parentPostId?: string | null;
-  }) => {
-    await onSubmit(input);
-    setAttached([]);
-  };
+  const attachSlot = images.unavailable ? undefined : (
+    <ImageUploader
+      onSelect={(f) => void handleSelectFile(f)}
+      disabled={busy || attached.length >= MAX_ATTACHED_IMAGES}
+      label={busy ? "アップロード中..." : "画像を添付"}
+    />
+  );
 
   return (
     <PostComposer
       placeholder={placeholder}
       parentPostId={parentPostId}
       attachedImageIds={attached}
-      onAttachImage={images.unavailable ? undefined : () => void handleAttach()}
-      onDetachImage={(id) => setAttached((prev) => prev.filter((x) => x !== id))}
+      attachSlot={attachSlot}
+      onDetachImage={(id) =>
+        setAttached((prev) => prev.filter((x) => x !== id))
+      }
       onSubmit={async (input) => {
         if (busy) return;
-        await handleSubmit({
+        await onSubmit({
           ...input,
           imageIds: attached.length > 0 ? attached : undefined,
         });
+        setAttached([]);
       }}
     />
   );
 }
-

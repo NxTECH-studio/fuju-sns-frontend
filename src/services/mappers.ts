@@ -9,7 +9,7 @@ import type {
   PostTag,
   PublicUser,
   SelfUser,
-} from '../api/types';
+} from "../api/types";
 import type {
   AuthorVM,
   BadgeVM,
@@ -21,14 +21,14 @@ import type {
   PostTagVM,
   PostVM,
   UserVM,
-} from './vm';
+} from "./vm";
 
 export function toBadgeVM(b: Badge): BadgeVM {
   return {
     id: b.id,
     key: b.key,
     label: b.label,
-    description: b.description ?? '',
+    description: b.description ?? "",
     iconUrl: b.icon_url,
     color: b.color,
     priority: b.priority,

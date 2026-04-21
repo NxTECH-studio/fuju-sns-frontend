@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { getPost, listReplies } from '../api/endpoints/posts';
-import { isAbortError } from '../api/error';
-import { toPostVM } from '../services/mappers';
-import type { PostVM } from '../services/vm';
-import { useFujuClient } from './useFujuClient';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { getPost, listReplies } from "../api/endpoints/posts";
+import { isAbortError } from "../api/error";
+import { toPostVM } from "../services/mappers";
+import type { PostVM } from "../services/vm";
+import { useFujuClient } from "./useFujuClient";
 
 export interface PostDetailState {
   post: PostVM | null;
@@ -23,18 +23,28 @@ export function usePostDetail(id: string): PostDetailState {
   const client = useFujuClient();
   const [post, setPost] = useState<PostVM | null>(null);
   const [replies, setReplies] = useState<PostVM[]>([]);
-  const [repliesNextCursor, setRepliesNextCursor] = useState<string | null>(null);
+  const [repliesNextCursor, setRepliesNextCursor] = useState<string | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [loadingReplies, setLoadingReplies] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
-  const ctrlRef = useRef<AbortController | null>(null);
+  const initialCtrlRef = useRef<AbortController | null>(null);
+  const moreCtrlRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    ctrlRef.current?.abort();
+    initialCtrlRef.current?.abort();
+    moreCtrlRef.current?.abort();
+    if (!id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPost(null);
+      setLoading(false);
+      setError(null);
+      return;
+    }
     const ctrl = new AbortController();
-    ctrlRef.current = ctrl;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    initialCtrlRef.current = ctrl;
     setLoading(true);
     setError(null);
 
@@ -51,23 +61,31 @@ export function usePostDetail(id: string): PostDetailState {
         setLoading(false);
       } catch (e) {
         if (isAbortError(e) || ctrl.signal.aborted) return;
-        setError(e instanceof Error ? e.message : 'unknown error');
+        setError(e instanceof Error ? e.message : "unknown error");
         setLoading(false);
       }
     })();
 
     return () => {
       ctrl.abort();
+      moreCtrlRef.current?.abort();
     };
   }, [client, id, tick]);
 
   const refresh = useCallback(() => setTick((t) => t + 1), []);
 
   const loadMoreReplies = useCallback(() => {
-    if (loadingReplies || !repliesNextCursor) return;
-    setLoadingReplies(true);
+    if (loadingReplies || !repliesNextCursor || !id) return;
+    moreCtrlRef.current?.abort();
     const ctrl = new AbortController();
-    listReplies(client, id, { cursor: repliesNextCursor, limit: 20 }, ctrl.signal)
+    moreCtrlRef.current = ctrl;
+    setLoadingReplies(true);
+    listReplies(
+      client,
+      id,
+      { cursor: repliesNextCursor, limit: 20 },
+      ctrl.signal
+    )
       .then((res) => {
         if (ctrl.signal.aborted) return;
         setReplies((prev) => [...prev, ...res.data.map(toPostVM)]);
@@ -76,7 +94,7 @@ export function usePostDetail(id: string): PostDetailState {
       })
       .catch((e) => {
         if (isAbortError(e) || ctrl.signal.aborted) return;
-        setError(e instanceof Error ? e.message : 'unknown error');
+        setError(e instanceof Error ? e.message : "unknown error");
         setLoadingReplies(false);
       });
   }, [client, id, loadingReplies, repliesNextCursor]);
@@ -88,7 +106,9 @@ export function usePostDetail(id: string): PostDetailState {
 
   const removeReply = useCallback((replyId: string) => {
     setReplies((prev) => prev.filter((r) => r.id !== replyId));
-    setPost((p) => (p ? { ...p, repliesCount: Math.max(0, p.repliesCount - 1) } : p));
+    setPost((p) =>
+      p ? { ...p, repliesCount: Math.max(0, p.repliesCount - 1) } : p
+    );
   }, []);
 
   const updatePost = useCallback((next: (p: PostVM) => PostVM) => {

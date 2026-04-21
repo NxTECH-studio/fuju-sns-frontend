@@ -1,8 +1,8 @@
-import { useState, type FormEvent } from 'react';
-import type { BadgeVM } from '../../services/vm';
-import { Button } from '../primitives/Button';
-import { TextInput } from '../primitives/TextInput';
-import { TextArea } from '../primitives/TextArea';
+import { useState, type FormEvent } from "react";
+import type { BadgeVM } from "../../services/vm";
+import { Button } from "../primitives/Button";
+import { TextInput } from "../primitives/TextInput";
+import { TextArea } from "../primitives/TextArea";
 
 export interface BadgeFormValues {
   key: string;
@@ -23,17 +23,17 @@ interface BadgeFormProps {
 
 export function BadgeForm({
   initial,
-  submitLabel = '作成',
+  submitLabel = "作成",
   requireKey = true,
   onSubmit,
   onCancel,
 }: BadgeFormProps) {
   const [values, setValues] = useState<BadgeFormValues>({
-    key: initial?.key ?? '',
-    label: initial?.label ?? '',
-    description: initial?.description ?? '',
-    iconUrl: initial?.iconUrl ?? '',
-    color: initial?.color ?? 'blue',
+    key: initial?.key ?? "",
+    label: initial?.label ?? "",
+    description: initial?.description ?? "",
+    iconUrl: initial?.iconUrl ?? "",
+    color: initial?.color ?? "blue",
     priority: initial?.priority ?? 0,
   });
   const [busy, setBusy] = useState(false);
@@ -46,14 +46,17 @@ export function BadgeForm({
     try {
       await onSubmit(values);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'unknown error');
+      setError(err instanceof Error ? err.message : "unknown error");
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <form onSubmit={handle} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <form
+      onSubmit={handle}
+      style={{ display: "flex", flexDirection: "column", gap: 8 }}
+    >
       {requireKey ? (
         <TextInput
           label="key (不変)"
@@ -73,7 +76,9 @@ export function BadgeForm({
       <TextArea
         label="description"
         value={values.description}
-        onChange={(e) => setValues((v) => ({ ...v, description: e.target.value }))}
+        onChange={(e) =>
+          setValues((v) => ({ ...v, description: e.target.value }))
+        }
         rows={2}
       />
       <TextInput
@@ -95,18 +100,23 @@ export function BadgeForm({
         min={0}
         value={values.priority}
         onChange={(e) =>
-          setValues((v) => ({ ...v, priority: Math.max(0, Number(e.target.value) || 0) }))
+          setValues((v) => ({
+            ...v,
+            priority: Math.max(0, Number(e.target.value) || 0),
+          }))
         }
       />
-      {error ? <p style={{ color: '#d33', fontSize: 12 }}>{error}</p> : null}
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+      {error ? (
+        <p style={{ color: "var(--danger)", fontSize: 12 }}>{error}</p>
+      ) : null}
+      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
         {onCancel ? (
           <Button type="button" variant="ghost" onClick={onCancel}>
             キャンセル
           </Button>
         ) : null}
         <Button type="submit" variant="primary" disabled={busy}>
-          {busy ? '送信中...' : submitLabel}
+          {busy ? "送信中..." : submitLabel}
         </Button>
       </div>
     </form>

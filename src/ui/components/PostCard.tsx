@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react';
-import type { PostVM } from '../../services/vm';
-import { Avatar } from '../primitives/Avatar';
-import { OGPPreview } from './OGPPreview';
-import styles from './PostCard.module.css';
+import type { ReactNode } from "react";
+import type { PostVM } from "../../services/vm";
+import { Avatar } from "../primitives/Avatar";
+import { OGPPreview } from "./OGPPreview";
+import styles from "./PostCard.module.css";
 
 interface PostCardProps {
   post: PostVM;
@@ -40,20 +40,24 @@ export function PostCard({
         >
           <Avatar
             src={author?.iconUrl ?? null}
-            alt={author?.displayName ?? 'deleted'}
+            alt={author?.displayName ?? "deleted"}
             size={36}
           />
           <span className={styles.authorMeta}>
             <span className={styles.displayName}>
-              {author?.displayName ?? '(deleted)'}
+              {author?.displayName ?? "(deleted)"}
             </span>
-            <span className={styles.displayId}>@{author?.displayId ?? 'deleted'}</span>
+            <span className={styles.displayId}>
+              @{author?.displayId ?? "deleted"}
+            </span>
           </span>
         </button>
         <time className={styles.time} dateTime={post.createdAt}>
           {formatDate(post.createdAt)}
         </time>
-        {followSlot ? <div className={styles.followSlot}>{followSlot}</div> : null}
+        {followSlot ? (
+          <div className={styles.followSlot}>{followSlot}</div>
+        ) : null}
       </header>
 
       {showReplyMeta && post.parentPostId ? (

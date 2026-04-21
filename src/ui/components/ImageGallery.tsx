@@ -1,6 +1,6 @@
-import type { ImageVM } from '../../services/vm';
-import { Button } from '../primitives/Button';
-import styles from './ImageGallery.module.css';
+import type { ImageVM } from "../../services/vm";
+import { Button } from "../primitives/Button";
+import styles from "./ImageGallery.module.css";
 
 interface ImageGalleryProps {
   images: ImageVM[];
@@ -9,9 +9,14 @@ interface ImageGalleryProps {
   selectedIds?: readonly string[];
 }
 
-export function ImageGallery({ images, onDelete, onAttach, selectedIds }: ImageGalleryProps) {
+export function ImageGallery({
+  images,
+  onDelete,
+  onAttach,
+  selectedIds,
+}: ImageGalleryProps) {
   if (images.length === 0) {
-    return <p style={{ color: 'var(--text)' }}>画像はありません</p>;
+    return <p style={{ color: "var(--text)" }}>画像はありません</p>;
   }
   return (
     <ul className={styles.grid}>
@@ -19,7 +24,12 @@ export function ImageGallery({ images, onDelete, onAttach, selectedIds }: ImageG
         const selected = selectedIds?.includes(img.id) ?? false;
         return (
           <li key={img.id} className={styles.card}>
-            <img className={styles.img} src={img.publicUrl} alt={img.fileName} loading="lazy" />
+            <img
+              className={styles.img}
+              src={img.publicUrl}
+              alt={img.fileName}
+              loading="lazy"
+            />
             <div className={styles.meta}>
               <p className={styles.name}>{img.fileName}</p>
               <p className={styles.size}>{formatBytes(img.fileSize)}</p>
@@ -27,11 +37,11 @@ export function ImageGallery({ images, onDelete, onAttach, selectedIds }: ImageG
             <div className={styles.actions}>
               {onAttach ? (
                 <Button
-                  variant={selected ? 'secondary' : 'primary'}
+                  variant={selected ? "secondary" : "primary"}
                   disabled={selected}
                   onClick={() => onAttach(img)}
                 >
-                  {selected ? '添付済み' : '投稿に添付'}
+                  {selected ? "添付済み" : "投稿に添付"}
                 </Button>
               ) : null}
               {onDelete ? (

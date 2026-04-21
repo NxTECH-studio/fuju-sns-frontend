@@ -1,15 +1,15 @@
-import { useCallback } from 'react';
-import { listFollowers, listFollowing } from '../api/endpoints/follows';
-import { toUserVM } from '../services/mappers';
-import type { UserVM } from '../services/vm';
-import { usePagedList, type PagedListState } from './usePagedList';
-import { useFujuClient } from './useFujuClient';
+import { useCallback } from "react";
+import { listFollowers, listFollowing } from "../api/endpoints/follows";
+import { toUserVM } from "../services/mappers";
+import type { UserVM } from "../services/vm";
+import { usePagedList, type PagedListState } from "./usePagedList";
+import { useFujuClient } from "./useFujuClient";
 
-export type FollowListKind = 'followers' | 'following';
+export type FollowListKind = "followers" | "following";
 
 export function useFollowList(
   kind: FollowListKind,
-  sub: string | null,
+  sub: string | null
 ): PagedListState<UserVM> {
   const client = useFujuClient();
 
@@ -20,7 +20,7 @@ export function useFollowList(
       }
       const q = { cursor, limit: 30 };
       const res =
-        kind === 'followers'
+        kind === "followers"
           ? await listFollowers(client, sub, q, signal)
           : await listFollowing(client, sub, q, signal);
       return {
@@ -28,7 +28,7 @@ export function useFollowList(
         nextCursor: res.next_cursor,
       };
     },
-    [client, kind, sub],
+    [client, kind, sub]
   );
 
   return usePagedList<UserVM>({ fetchPage, deps: [client, kind, sub] });

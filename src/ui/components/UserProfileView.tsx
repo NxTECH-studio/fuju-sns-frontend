@@ -1,8 +1,9 @@
-import type { ReactNode } from 'react';
-import type { UserVM } from '../../services/vm';
-import { Avatar } from '../primitives/Avatar';
-import { BadgeChip } from './BadgeChip';
-import styles from './UserProfileView.module.css';
+import type { ReactNode } from "react";
+import type { UserVM } from "../../services/vm";
+import { safeCssUrl } from "../../services/url";
+import { Avatar } from "../primitives/Avatar";
+import { BadgeChip } from "./BadgeChip";
+import styles from "./UserProfileView.module.css";
 
 interface UserProfileViewProps {
   user: UserVM;
@@ -19,12 +20,13 @@ export function UserProfileView({
   onOpenFollowers,
   onOpenFollowing,
 }: UserProfileViewProps) {
+  const bannerBg = safeCssUrl(user.bannerUrl);
   return (
     <section className={styles.profile}>
-      {user.bannerUrl ? (
+      {bannerBg ? (
         <div
           className={styles.banner}
-          style={{ backgroundImage: `url(${user.bannerUrl})` }}
+          style={{ backgroundImage: bannerBg }}
           aria-hidden
         />
       ) : (
@@ -49,12 +51,22 @@ export function UserProfileView({
         </ul>
       ) : null}
       <div className={styles.counts}>
-        <button type="button" className={styles.countBtn} onClick={onOpenFollowers}>
-          <span className={styles.countNum}>{followersCount ?? '-'}</span>
+        <button
+          type="button"
+          className={styles.countBtn}
+          onClick={onOpenFollowers}
+          disabled={!onOpenFollowers}
+        >
+          <span className={styles.countNum}>{followersCount ?? "-"}</span>
           <span className={styles.countLabel}>フォロワー</span>
         </button>
-        <button type="button" className={styles.countBtn} onClick={onOpenFollowing}>
-          <span className={styles.countNum}>-</span>
+        <button
+          type="button"
+          className={styles.countBtn}
+          onClick={onOpenFollowing}
+          disabled={!onOpenFollowing}
+        >
+          <span className={styles.countNum}>→</span>
           <span className={styles.countLabel}>フォロー中</span>
         </button>
       </div>

@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { getUser } from '../api/endpoints/users';
-import { isAbortError } from '../api/error';
-import { toUserVM } from '../services/mappers';
-import type { UserVM } from '../services/vm';
-import { useFujuClient } from './useFujuClient';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { getUser } from "../api/endpoints/users";
+import { isAbortError } from "../api/error";
+import { toUserVM } from "../services/mappers";
+import type { UserVM } from "../services/vm";
+import { useFujuClient } from "./useFujuClient";
 
 export interface UserProfileState {
   user: UserVM | null;
@@ -42,7 +42,7 @@ export function useUserProfile(sub: string | null): UserProfileState {
       })
       .catch((e) => {
         if (isAbortError(e) || ctrl.signal.aborted) return;
-        setError(e instanceof Error ? e.message : 'unknown error');
+        setError(e instanceof Error ? e.message : "unknown error");
         setLoading(false);
       });
 

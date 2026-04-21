@@ -166,7 +166,7 @@ export interface BadgeListEnvelope {
 }
 export interface GrantBadgeEnvelope {
   data: {
-    status: 'granted';
+    status: "granted";
     user_id: ULID;
     badge: Badge;
   };

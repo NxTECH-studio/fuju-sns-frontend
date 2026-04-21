@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react';
-import type { UserVM } from '../../services/vm';
-import { Avatar } from '../primitives/Avatar';
-import styles from './UserCard.module.css';
+import type { ReactNode } from "react";
+import type { UserVM } from "../../services/vm";
+import { Avatar } from "../primitives/Avatar";
+import styles from "./UserCard.module.css";
 
 interface UserCardProps {
   user: UserVM;

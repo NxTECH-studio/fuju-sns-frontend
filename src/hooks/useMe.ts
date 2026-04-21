@@ -1,6 +1,8 @@
-import { useMeContext, type MeState } from '../state/meContext';
+import { useMeContext, type MeState } from "../state/meContext";
 
-export function useMe(): MeState & { refresh: () => Promise<void> } {
+export type UseMeReturn = MeState & { refresh: () => Promise<void> };
+
+export function useMe(): UseMeReturn {
   const { state, refresh } = useMeContext();
-  return { ...state, refresh } as MeState & { refresh: () => Promise<void> };
+  return { ...state, refresh };
 }

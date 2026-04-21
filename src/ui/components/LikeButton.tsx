@@ -1,4 +1,4 @@
-import styles from './LikeButton.module.css';
+import styles from "./LikeButton.module.css";
 
 interface LikeButtonProps {
   liked: boolean;
@@ -7,11 +7,18 @@ interface LikeButtonProps {
   onToggle: () => void;
 }
 
-export function LikeButton({ liked, count, disabled, onToggle }: LikeButtonProps) {
+export function LikeButton({
+  liked,
+  count,
+  disabled,
+  onToggle,
+}: LikeButtonProps) {
   return (
     <button
       type="button"
-      className={[styles.btn, liked ? styles.liked : ''].filter(Boolean).join(' ')}
+      className={[styles.btn, liked ? styles.liked : ""]
+        .filter(Boolean)
+        .join(" ")}
       disabled={disabled}
       onClick={(e) => {
         e.stopPropagation();
@@ -19,7 +26,7 @@ export function LikeButton({ liked, count, disabled, onToggle }: LikeButtonProps
       }}
       aria-pressed={liked}
     >
-      <span aria-hidden>{liked ? '♥' : '♡'}</span>
+      <span aria-hidden>{liked ? "♥" : "♡"}</span>
       <span>{count}</span>
     </button>
   );

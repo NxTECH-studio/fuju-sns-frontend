@@ -1,9 +1,9 @@
-import { useCallback } from 'react';
-import { createPost, deletePost } from '../api/endpoints/posts';
-import { toPostVM } from '../services/mappers';
-import type { PostVM } from '../services/vm';
-import type { CreatePostRequest } from '../api/types';
-import { useFujuClient } from './useFujuClient';
+import { useCallback } from "react";
+import { createPost, deletePost } from "../api/endpoints/posts";
+import { toPostVM } from "../services/mappers";
+import type { PostVM } from "../services/vm";
+import type { CreatePostRequest } from "../api/types";
+import { useFujuClient } from "./useFujuClient";
 
 export interface PostActions {
   create: (input: CreatePostRequest) => Promise<PostVM>;
@@ -18,14 +18,14 @@ export function usePostActions(): PostActions {
       const res = await createPost(client, input);
       return toPostVM(res.data);
     },
-    [client],
+    [client]
   );
 
   const remove = useCallback(
     async (id: string): Promise<void> => {
       await deletePost(client, id);
     },
-    [client],
+    [client]
   );
 
   return { create, remove };

@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { isAbortError } from '../api/error';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { isAbortError } from "../api/error";
 
 export interface Page<T> {
   items: T[];
@@ -20,26 +20,35 @@ export interface PagedListState<T> {
 }
 
 interface Options<T> {
-  fetchPage: (cursor: string | undefined, signal: AbortSignal) => Promise<Page<T>>;
+  fetchPage: (
+    cursor: string | undefined,
+    signal: AbortSignal
+  ) => Promise<Page<T>>;
   deps: ReadonlyArray<unknown>;
 }
 
-export function usePagedList<T>({ fetchPage, deps }: Options<T>): PagedListState<T> {
+export function usePagedList<T>({
+  fetchPage,
+  deps,
+}: Options<T>): PagedListState<T> {
   const [items, setItems] = useState<T[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const ctrlRef = useRef<AbortController | null>(null);
+  const initialCtrlRef = useRef<AbortController | null>(null);
+  const moreCtrlRef = useRef<AbortController | null>(null);
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
-    ctrlRef.current?.abort();
+    initialCtrlRef.current?.abort();
+    moreCtrlRef.current?.abort();
     const ctrl = new AbortController();
-    ctrlRef.current = ctrl;
+    initialCtrlRef.current = ctrl;
     setItems([]);
     setNextCursor(null);
     setLoading(true);
+    setLoadingMore(false);
     setError(null);
 
     fetchPage(undefined, ctrl.signal)
@@ -51,12 +60,13 @@ export function usePagedList<T>({ fetchPage, deps }: Options<T>): PagedListState
       })
       .catch((e) => {
         if (isAbortError(e) || ctrl.signal.aborted) return;
-        setError(e instanceof Error ? e.message : 'unknown error');
+        setError(e instanceof Error ? e.message : "unknown error");
         setLoading(false);
       });
 
     return () => {
       ctrl.abort();
+      moreCtrlRef.current?.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...deps, tick]);
@@ -67,7 +77,9 @@ export function usePagedList<T>({ fetchPage, deps }: Options<T>): PagedListState
 
   const loadMore = useCallback(() => {
     if (loading || loadingMore || !nextCursor) return;
+    moreCtrlRef.current?.abort();
     const ctrl = new AbortController();
+    moreCtrlRef.current = ctrl;
     setLoadingMore(true);
     fetchPage(nextCursor, ctrl.signal)
       .then((page) => {
@@ -78,7 +90,7 @@ export function usePagedList<T>({ fetchPage, deps }: Options<T>): PagedListState
       })
       .catch((e) => {
         if (isAbortError(e) || ctrl.signal.aborted) return;
-        setError(e instanceof Error ? e.message : 'unknown error');
+        setError(e instanceof Error ? e.message : "unknown error");
         setLoadingMore(false);
       });
   }, [fetchPage, loading, loadingMore, nextCursor]);
@@ -91,9 +103,12 @@ export function usePagedList<T>({ fetchPage, deps }: Options<T>): PagedListState
     setItems((prev) => prev.filter((x) => !pred(x)));
   }, []);
 
-  const updateById = useCallback((pred: (item: T) => boolean, next: (item: T) => T) => {
-    setItems((prev) => prev.map((x) => (pred(x) ? next(x) : x)));
-  }, []);
+  const updateById = useCallback(
+    (pred: (item: T) => boolean, next: (item: T) => T) => {
+      setItems((prev) => prev.map((x) => (pred(x) ? next(x) : x)));
+    },
+    []
+  );
 
   return {
     items,

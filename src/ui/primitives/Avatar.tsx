@@ -1,4 +1,4 @@
-import styles from './Avatar.module.css';
+import styles from "./Avatar.module.css";
 
 interface AvatarProps {
   src: string | null | undefined;
@@ -15,7 +15,7 @@ export function Avatar({ src, alt, size = 40 }: AvatarProps) {
         style={{ width: dim, height: dim, fontSize: Math.floor(size / 2) }}
         aria-label={alt}
       >
-        {alt.slice(0, 1).toUpperCase() || '?'}
+        {alt.slice(0, 1).toUpperCase() || "?"}
       </span>
     );
   }

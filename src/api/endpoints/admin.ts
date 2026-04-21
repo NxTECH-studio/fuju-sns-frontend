@@ -1,4 +1,4 @@
-import type { FujuClient } from '../client';
+import type { FujuClient } from "../client";
 import type {
   BadgeEnvelope,
   BadgeListEnvelope,
@@ -7,44 +7,48 @@ import type {
   GrantBadgeRequest,
   ULID,
   UpdateBadgeRequest,
-} from '../types';
+} from "../types";
 
 export function adminBadgesList(
   client: FujuClient,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<BadgeListEnvelope> {
-  return client.get<BadgeListEnvelope>('/v1/admin/badges', { signal });
+  return client.get<BadgeListEnvelope>("/v1/admin/badges", { signal });
 }
 
 export function adminBadgesCreate(
   client: FujuClient,
   input: CreateBadgeRequest,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<BadgeEnvelope> {
-  return client.post<BadgeEnvelope>('/v1/admin/badges', input, { signal });
+  return client.post<BadgeEnvelope>("/v1/admin/badges", input, { signal });
 }
 
 export function adminBadgesUpdate(
   client: FujuClient,
   id: ULID,
   input: UpdateBadgeRequest,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<BadgeEnvelope> {
-  return client.put<BadgeEnvelope>(`/v1/admin/badges/${encodeURIComponent(id)}`, input, {
-    signal,
-  });
+  return client.put<BadgeEnvelope>(
+    `/v1/admin/badges/${encodeURIComponent(id)}`,
+    input,
+    {
+      signal,
+    }
+  );
 }
 
 export function adminBadgesGrant(
   client: FujuClient,
   sub: ULID,
   input: GrantBadgeRequest,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<GrantBadgeEnvelope> {
   return client.post<GrantBadgeEnvelope>(
     `/v1/admin/users/${encodeURIComponent(sub)}/badges`,
     input,
-    { signal },
+    { signal }
   );
 }
 
@@ -52,10 +56,12 @@ export function adminBadgesRevoke(
   client: FujuClient,
   sub: ULID,
   badgeId: ULID,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<void> {
   return client.del(
-    `/v1/admin/users/${encodeURIComponent(sub)}/badges/${encodeURIComponent(badgeId)}`,
-    { signal },
+    `/v1/admin/users/${encodeURIComponent(sub)}/badges/${encodeURIComponent(
+      badgeId
+    )}`,
+    { signal }
   );
 }

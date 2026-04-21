@@ -1,20 +1,20 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   adminBadgesCreate,
   adminBadgesGrant,
   adminBadgesList,
   adminBadgesRevoke,
   adminBadgesUpdate,
-} from '../api/endpoints/admin';
-import { isAbortError } from '../api/error';
-import { toBadgeVM } from '../services/mappers';
-import type { BadgeVM } from '../services/vm';
+} from "../api/endpoints/admin";
+import { isAbortError } from "../api/error";
+import { toBadgeVM } from "../services/mappers";
+import type { BadgeVM } from "../services/vm";
 import type {
   CreateBadgeRequest,
   GrantBadgeRequest,
   UpdateBadgeRequest,
-} from '../api/types';
-import { useFujuClient } from './useFujuClient';
+} from "../api/types";
+import { useFujuClient } from "./useFujuClient";
 
 export interface AdminBadgesState {
   badges: BadgeVM[];
@@ -51,7 +51,7 @@ export function useAdminBadges(): AdminBadgesState {
       })
       .catch((e) => {
         if (isAbortError(e) || ctrl.signal.aborted) return;
-        setError(e instanceof Error ? e.message : 'unknown error');
+        setError(e instanceof Error ? e.message : "unknown error");
         setLoading(false);
       });
 
@@ -69,7 +69,7 @@ export function useAdminBadges(): AdminBadgesState {
       setBadges((prev) => [...prev, vm]);
       return vm;
     },
-    [client],
+    [client]
   );
 
   const update = useCallback(
@@ -79,7 +79,7 @@ export function useAdminBadges(): AdminBadgesState {
       setBadges((prev) => prev.map((b) => (b.id === id ? vm : b)));
       return vm;
     },
-    [client],
+    [client]
   );
 
   const grant = useCallback(
@@ -87,14 +87,14 @@ export function useAdminBadges(): AdminBadgesState {
       const res = await adminBadgesGrant(client, sub, input);
       return toBadgeVM(res.data.badge);
     },
-    [client],
+    [client]
   );
 
   const revoke = useCallback(
     async (sub: string, badgeId: string): Promise<void> => {
       await adminBadgesRevoke(client, sub, badgeId);
     },
-    [client],
+    [client]
   );
 
   return { badges, loading, error, reload, create, update, grant, revoke };

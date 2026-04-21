@@ -47,7 +47,7 @@
 
 .danger {
   border-color: rgba(255, 80, 80, 0.5);
-  color: #d33;
+  color: var(--danger);
 }
 .danger:hover:not(:disabled) {
   background: rgba(255, 80, 80, 0.1);

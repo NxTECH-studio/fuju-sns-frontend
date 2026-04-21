@@ -1,15 +1,15 @@
-import { AuthGuard, AuthProvider } from './auth-component/src';
-import { FujuClientProvider } from './state/FujuClientProvider';
-import { MeProvider } from './state/MeProvider';
-import { ToastProvider } from './state/ToastProvider';
-import { AppRoutes } from './routes/router';
+import { AuthGuard, AuthProvider } from "./auth-component/src";
+import { FujuClientProvider } from "./state/FujuClientProvider";
+import { MeProvider } from "./state/MeProvider";
+import { ToastProvider } from "./state/ToastProvider";
+import { AppRoutes } from "./routes/router";
 
 export function AppRoot() {
   return (
     <AuthProvider
       config={{
-        baseURL: 'https://auth.sheeplab.net',
-        loadingFallback: <p style={{ padding: 24 }}>Loading...</p>,
+        baseURL: "https://auth.sheeplab.net",
+        loadingFallback: <p style={{ padding: 24 }}>読み込み中...</p>,
       }}
     >
       <FujuClientProvider>

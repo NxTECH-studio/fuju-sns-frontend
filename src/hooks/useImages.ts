@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   imagesDelete,
   imagesListMine,
   imagesUpload,
-} from '../api/endpoints/images';
-import { isAbortError, isFujuApiError } from '../api/error';
-import { toImageVM } from '../services/mappers';
-import type { ImageVM } from '../services/vm';
-import { useFujuClient } from './useFujuClient';
+} from "../api/endpoints/images";
+import { isAbortError, isFujuApiError } from "../api/error";
+import { toImageVM } from "../services/mappers";
+import type { ImageVM } from "../services/vm";
+import { useFujuClient } from "./useFujuClient";
 
 export interface ImagesState {
   images: ImageVM[];
@@ -50,7 +50,7 @@ export function useImages(): ImagesState {
           setLoading(false);
           return;
         }
-        setError(e instanceof Error ? e.message : 'unknown error');
+        setError(e instanceof Error ? e.message : "unknown error");
         setLoading(false);
       });
 
@@ -68,7 +68,7 @@ export function useImages(): ImagesState {
       setImages((prev) => [vm, ...prev]);
       return vm;
     },
-    [client],
+    [client]
   );
 
   const remove = useCallback(
@@ -76,7 +76,7 @@ export function useImages(): ImagesState {
       await imagesDelete(client, id);
       setImages((prev) => prev.filter((i) => i.id !== id));
     },
-    [client],
+    [client]
   );
 
   return { images, loading, error, unavailable, upload, remove, refresh };

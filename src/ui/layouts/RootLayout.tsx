@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react';
-import { Avatar } from '../primitives/Avatar';
-import { Button } from '../primitives/Button';
-import styles from './RootLayout.module.css';
+import type { ReactNode } from "react";
+import { Avatar } from "../primitives/Avatar";
+import { Button } from "../primitives/Button";
+import styles from "./RootLayout.module.css";
 
 export interface NavLink {
   to: string;
@@ -37,7 +37,7 @@ export function RootLayout({
         <button
           type="button"
           className={styles.brand}
-          onClick={() => onNavigate('/')}
+          onClick={() => onNavigate("/")}
         >
           Fuju
         </button>
@@ -64,9 +64,12 @@ export function RootLayout({
               <li key={l.to}>
                 <button
                   type="button"
-                  className={[styles.navLink, l.active ? styles.navLinkActive : '']
+                  className={[
+                    styles.navLink,
+                    l.active ? styles.navLinkActive : "",
+                  ]
                     .filter(Boolean)
-                    .join(' ')}
+                    .join(" ")}
                   onClick={() => onNavigate(l.to)}
                 >
                   {l.label}

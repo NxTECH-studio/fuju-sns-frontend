@@ -1,0 +1,28 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.label {
+  font-size: 13px;
+  color: var(--text);
+}
+.textarea {
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-h);
+  min-height: 80px;
+  resize: vertical;
+}
+.textarea:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.error {
+  color: #d33;
+  font-size: 12px;
+}

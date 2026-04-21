@@ -1,20 +1,14 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { AuthProvider, AuthGuard } from './auth-component/src';
-import App from './App';
+import { BrowserRouter } from 'react-router';
+import { AppRoot } from './AppRoot';
 
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AuthProvider
-      config={{
-        baseURL: 'https://auth.sheeplab.net',
-      }}
-    >
-      <AuthGuard>
-        <App />
-      </AuthGuard>
-    </AuthProvider>
+    <BrowserRouter>
+      <AppRoot />
+    </BrowserRouter>
   </StrictMode>,
 );

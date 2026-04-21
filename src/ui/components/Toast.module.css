@@ -1,0 +1,38 @@
+.stack {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 24px;
+  margin: 0 auto;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 1000;
+  padding: 0 16px;
+  pointer-events: none;
+}
+
+.item {
+  pointer-events: auto;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+
+.info {
+  border-color: var(--accent-border);
+}
+.success {
+  border-color: rgba(50, 180, 80, 0.6);
+}
+.error {
+  border-color: rgba(255, 80, 80, 0.6);
+  color: #d33;
+}

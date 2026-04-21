@@ -1,0 +1,17 @@
+.img {
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  background: var(--code-bg);
+}
+
+.fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-weight: 600;
+  text-transform: uppercase;
+}

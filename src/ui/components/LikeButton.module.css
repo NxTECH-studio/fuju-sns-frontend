@@ -1,0 +1,29 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.btn:hover:not(:disabled) {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.liked {
+  color: #e25656;
+}
+.liked:hover:not(:disabled) {
+  color: #e25656;
+  background: rgba(226, 86, 86, 0.1);
+}

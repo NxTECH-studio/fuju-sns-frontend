@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { getPost, listReplies } from "../api/endpoints/posts";
 import { isAbortError } from "../api/error";
 import { toPostVM } from "../services/mappers";
-import type { PostVM } from "../services/vm";
+import type { PostVM } from "../types/vm";
 import { useFujuClient } from "./useFujuClient";
 
 export interface PostDetailState {

@@ -1,30 +1,60 @@
-import { useState, type FormEvent } from "react";
-import { Navigate, useNavigate } from "react-router";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { Navigate, useNavigate, useSearchParams } from "react-router";
 import { useMe } from "../../hooks/useMe";
 import { useAdminBadges } from "../../hooks/useAdminBadges";
 import { useUserProfile } from "../../hooks/useUserProfile";
+import { useUsers } from "../../hooks/useUsers";
 import { useToast } from "../../state/toastContext";
 import { Button } from "../../ui/primitives/Button";
 import { TextInput } from "../../ui/primitives/TextInput";
 import { BadgeChip } from "../../ui/components/BadgeChip";
 import { ErrorMessage } from "../../ui/components/ErrorMessage";
 import { Avatar } from "../../ui/primitives/Avatar";
+import styles from "./AdminUserBadges.module.css";
+
+const USERS_PAGE_SIZE = 20;
 
 export function AdminUserBadgesRoute() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialBadgeKey = searchParams.get("grant") ?? "";
   const me = useMe();
   const [subInput, setSubInput] = useState("");
   const [targetSub, setTargetSub] = useState<string | null>(null);
   const profile = useUserProfile(targetSub);
   const admin = useAdminBadges();
   const toast = useToast();
-  const [badgeKey, setBadgeKey] = useState("");
+  const [badgeKey, setBadgeKey] = useState(initialBadgeKey);
   const [reason, setReason] = useState("");
+  const [filter, setFilter] = useState("");
+  const [offset, setOffset] = useState(0);
+  const users = useUsers({ limit: USERS_PAGE_SIZE, offset });
 
-  if (me.status === "loading" || me.status === "idle")
+  // Keep badgeKey synced when the query changes (e.g. via back/forward).
+  useEffect(() => {
+    if (initialBadgeKey) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setBadgeKey(initialBadgeKey);
+    }
+  }, [initialBadgeKey]);
+
+  const filteredUsers = useMemo(() => {
+    if (!filter.trim()) return users.users;
+    const needle = filter.trim().toLowerCase();
+    return users.users.filter(
+      (u) =>
+        u.displayName.toLowerCase().includes(needle) ||
+        u.displayId.toLowerCase().includes(needle) ||
+        u.sub.toLowerCase().includes(needle)
+    );
+  }, [users.users, filter]);
+
+  if (me.status === "loading" || me.status === "idle") {
     return <p>読み込み中...</p>;
-  if (me.status !== "ready" || !me.me.isAdmin)
+  }
+  if (me.status !== "ready" || !me.me.isAdmin) {
     return <Navigate to="/" replace />;
+  }
 
   const handleLookup = (e: FormEvent) => {
     e.preventDefault();
@@ -36,7 +66,7 @@ export function AdminUserBadgesRoute() {
     if (!targetSub) return;
     try {
       await admin.grant(targetSub, {
-        badge_key: badgeKey,
+        badgeKey,
         reason: reason || undefined,
       });
       toast.show("バッジを付与しました", "success");
@@ -66,31 +96,87 @@ export function AdminUserBadgesRoute() {
     }
   };
 
+  const hasPrev = offset > 0;
+  const hasNext = offset + users.users.length < users.total;
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    <div className={styles.wrap}>
+      <div className={styles.header}>
         <Button variant="ghost" onClick={() => navigate("/admin/badges")}>
           ← バッジマスター
         </Button>
         <h1>ユーザーへのバッジ管理</h1>
       </div>
-      <form
-        onSubmit={handleLookup}
-        style={{ display: "flex", gap: 8, alignItems: "flex-end" }}
-      >
+
+      <section className={styles.picker}>
+        <div className={styles.pickerControls}>
+          <TextInput
+            label="フィルタ (displayName / @id / sub の部分一致)"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            placeholder="検索..."
+          />
+          <Button
+            type="button"
+            disabled={!hasPrev || users.loading}
+            onClick={() => setOffset((o) => Math.max(0, o - USERS_PAGE_SIZE))}
+          >
+            前へ
+          </Button>
+          <Button
+            type="button"
+            disabled={!hasNext || users.loading}
+            onClick={() => setOffset((o) => o + USERS_PAGE_SIZE)}
+          >
+            次へ
+          </Button>
+        </div>
+        {users.error ? (
+          <ErrorMessage message={users.error} />
+        ) : filteredUsers.length === 0 ? (
+          <p className={styles.pickerEmpty}>
+            {users.loading ? "読み込み中..." : "該当ユーザーなし"}
+          </p>
+        ) : (
+          <ul className={styles.pickerList}>
+            {filteredUsers.map((u) => (
+              <li key={u.sub}>
+                <button
+                  type="button"
+                  className={styles.pickerItem}
+                  onClick={() => setTargetSub(u.sub)}
+                >
+                  <Avatar src={u.iconUrl} alt={u.displayName} size={28} />
+                  <span className={styles.pickerItemMeta}>
+                    <span className={styles.pickerItemName}>
+                      {u.displayName}
+                    </span>
+                    <span className={styles.pickerItemSub}>{u.sub}</span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className={styles.pickerPager}>
+          <span>
+            {users.total > 0
+              ? `${offset + 1}-${offset + users.users.length} / ${users.total}`
+              : ""}
+          </span>
+        </div>
+      </section>
+
+      <form onSubmit={handleLookup} className={styles.lookupForm}>
         <TextInput
-          label="対象ユーザーの sub (ULID)"
+          label="sub を直接指定 (ULID)"
           value={subInput}
           onChange={(e) => setSubInput(e.target.value)}
           placeholder="01HZXYABCDEFGHJKMNPQRSTVWX"
-          required
           minLength={26}
           maxLength={26}
-          style={{ flex: 1 }}
         />
-        <Button type="submit" variant="primary">
-          読み込み
-        </Button>
+        <Button type="submit">読み込み</Button>
       </form>
 
       {targetSub ? (
@@ -100,62 +186,32 @@ export function AdminUserBadgesRoute() {
           <ErrorMessage message={profile.error} />
         ) : profile.user ? (
           <>
-            <section
-              style={{
-                display: "flex",
-                gap: 12,
-                alignItems: "center",
-                padding: 12,
-                border: "1px solid var(--border)",
-                borderRadius: 8,
-              }}
-            >
+            <section className={styles.userCard}>
               <Avatar
                 src={profile.user.iconUrl}
                 alt={profile.user.displayName}
                 size={48}
               />
-              <div>
-                <p style={{ color: "var(--text-h)", fontWeight: 500 }}>
+              <div className={styles.userCardMeta}>
+                <span className={styles.displayName}>
                   {profile.user.displayName}
-                </p>
-                <p style={{ fontSize: 12, color: "var(--text)" }}>
+                </span>
+                <span className={styles.displayId}>
                   @{profile.user.displayId}
-                </p>
+                </span>
               </div>
             </section>
 
-            <section>
+            <section className={styles.section}>
               <h2>現在のバッジ</h2>
               {profile.user.badges.length === 0 ? (
-                <p style={{ color: "var(--text)" }}>なし</p>
+                <p className={styles.pickerEmpty}>なし</p>
               ) : (
-                <ul
-                  style={{
-                    listStyle: "none",
-                    padding: 0,
-                    margin: 0,
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 6,
-                  }}
-                >
+                <ul className={styles.badgeList}>
                   {profile.user.badges.map((b) => (
-                    <li
-                      key={b.id}
-                      style={{
-                        display: "flex",
-                        gap: 8,
-                        alignItems: "center",
-                        padding: 8,
-                        border: "1px solid var(--border)",
-                        borderRadius: 6,
-                      }}
-                    >
+                    <li key={b.id} className={styles.badgeRow}>
                       <BadgeChip badge={b} />
-                      <span
-                        style={{ flex: 1, fontSize: 12, color: "var(--text)" }}
-                      >
+                      <span className={styles.badgeKey}>
                         <code>{b.key}</code>
                       </span>
                       <Button
@@ -170,12 +226,9 @@ export function AdminUserBadgesRoute() {
               )}
             </section>
 
-            <section>
+            <section className={styles.section}>
               <h2>バッジを付与</h2>
-              <form
-                onSubmit={handleGrant}
-                style={{ display: "flex", flexDirection: "column", gap: 8 }}
-              >
+              <form onSubmit={handleGrant} className={styles.grantForm}>
                 <TextInput
                   label="badge_key"
                   value={badgeKey}

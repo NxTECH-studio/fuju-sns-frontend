@@ -96,6 +96,18 @@
   display: block;
 }
 
+.imageFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 80px;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 12px;
+}
+
 .tags {
   display: flex;
   flex-wrap: wrap;

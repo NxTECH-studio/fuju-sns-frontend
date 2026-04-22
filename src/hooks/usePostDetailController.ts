@@ -23,6 +23,9 @@ export function usePostDetailController(id: string): PostDetailController {
   const detail = usePostDetail(id);
   const actions = usePostActions();
   const toast = useToast();
+  // Pull stable method refs out of the detail object so our useCallback
+  // deps don't pick up the fresh `detail` object each render.
+  const { appendReply, removeReply } = detail;
 
   const onDelete = useCallback(
     async (
@@ -37,7 +40,7 @@ export function usePostDetailController(id: string): PostDetailController {
           toast.show("投稿を削除しました", "success");
           onPrimaryDeleted?.();
         } else {
-          detail.removeReply(postId);
+          removeReply(postId);
           toast.show("返信を削除しました", "success");
         }
       } catch (e) {
@@ -47,7 +50,7 @@ export function usePostDetailController(id: string): PostDetailController {
         );
       }
     },
-    [actions, detail, toast]
+    [actions, removeReply, toast]
   );
 
   const onReply = useCallback(
@@ -57,10 +60,10 @@ export function usePostDetailController(id: string): PostDetailController {
       parentPostId?: string | null;
     }): Promise<void> => {
       const vm = await actions.create({ ...input, parentPostId: id });
-      detail.appendReply(vm);
+      appendReply(vm);
       toast.show("返信しました", "success");
     },
-    [actions, detail, id, toast]
+    [actions, appendReply, id, toast]
   );
 
   return { detail, onDelete, onReply };

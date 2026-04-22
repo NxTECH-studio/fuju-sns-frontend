@@ -63,17 +63,22 @@ export function AdminUserBadgesRoute() {
 
   const handleGrant = async (e: FormEvent) => {
     e.preventDefault();
-    if (!targetSub) return;
+    const target = targetSub;
+    if (!target) return;
     try {
-      await admin.grant(targetSub, {
+      await admin.grant(target, {
         badgeKey,
         reason: reason || undefined,
       });
+      // If the admin switched to a different user mid-request, skip the
+      // toast+refresh so a stale success doesn't land on the new profile.
+      if (target !== targetSub) return;
       toast.show("バッジを付与しました", "success");
       setBadgeKey("");
       setReason("");
       profile.refresh();
     } catch (err) {
+      if (target !== targetSub) return;
       toast.show(
         err instanceof Error ? err.message : "付与に失敗しました",
         "error"
@@ -82,13 +87,16 @@ export function AdminUserBadgesRoute() {
   };
 
   const handleRevoke = async (badgeId: string) => {
-    if (!targetSub) return;
+    const target = targetSub;
+    if (!target) return;
     if (!window.confirm("このバッジを剥奪しますか？")) return;
     try {
-      await admin.revoke(targetSub, badgeId);
+      await admin.revoke(target, badgeId);
+      if (target !== targetSub) return;
       toast.show("バッジを剥奪しました", "success");
       profile.refresh();
     } catch (err) {
+      if (target !== targetSub) return;
       toast.show(
         err instanceof Error ? err.message : "剥奪に失敗しました",
         "error"
@@ -96,6 +104,7 @@ export function AdminUserBadgesRoute() {
     }
   };
 
+  const filterActive = filter.trim().length > 0;
   const hasPrev = offset > 0;
   const hasNext = offset + users.users.length < users.total;
 
@@ -118,19 +127,24 @@ export function AdminUserBadgesRoute() {
           />
           <Button
             type="button"
-            disabled={!hasPrev || users.loading}
+            disabled={!hasPrev || users.loading || filterActive}
             onClick={() => setOffset((o) => Math.max(0, o - USERS_PAGE_SIZE))}
           >
             前へ
           </Button>
           <Button
             type="button"
-            disabled={!hasNext || users.loading}
+            disabled={!hasNext || users.loading || filterActive}
             onClick={() => setOffset((o) => o + USERS_PAGE_SIZE)}
           >
             次へ
           </Button>
         </div>
+        {filterActive ? (
+          <p className={styles.pickerEmpty}>
+            フィルタは現在のページ内のみに適用されます。別ページを見るにはフィルタをクリアしてください。
+          </p>
+        ) : null}
         {users.error ? (
           <ErrorMessage message={users.error} />
         ) : filteredUsers.length === 0 ? (

@@ -11,15 +11,24 @@ export interface AbortableResourceState<T> {
 
 interface Options<T> {
   fetcher: (signal: AbortSignal) => Promise<T>;
+  // Dependencies that key the fetch. When they change, the in-flight
+  // request is aborted and a fresh fetch runs. MUST include everything
+  // the fetcher closure captures, or the hook will serve stale data.
   deps: ReadonlyArray<unknown>;
   // When true, keeps the previous `data` visible during a reload instead
-  // of flashing back to `null`. Useful for pagination-like reloads.
+  // of flashing back to `null`. Use only when the deps change does not
+  // alter the meaning of T (e.g. paginating the same collection).
   keepDataWhileReloading?: boolean;
 }
 
 // Generic abortable resource: single-shot fetch keyed by `deps` with a
 // reload trigger. Consolidates the AbortController + tick + isAbortError
 // boilerplate that would otherwise be repeated across every resource hook.
+//
+// The fetcher is read through a ref so the effect dep array can stay
+// limited to `deps` (+ tick). Callers must list everything the fetcher
+// closes over in `deps`; the fetcher reference itself does not need to
+// be stable.
 export function useAbortableResource<T>({
   fetcher,
   deps,
@@ -30,6 +39,8 @@ export function useAbortableResource<T>({
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
   const ctrlRef = useRef<AbortController | null>(null);
+  const fetcherRef = useRef(fetcher);
+  fetcherRef.current = fetcher;
 
   useEffect(() => {
     ctrlRef.current?.abort();
@@ -39,7 +50,8 @@ export function useAbortableResource<T>({
     setError(null);
     if (!keepDataWhileReloading) setDataState(null);
 
-    fetcher(ctrl.signal)
+    fetcherRef
+      .current(ctrl.signal)
       .then((value) => {
         if (ctrl.signal.aborted) return;
         setDataState(value);
@@ -55,7 +67,7 @@ export function useAbortableResource<T>({
       ctrl.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [...deps, tick]);
+  }, [...deps, tick, keepDataWhileReloading]);
 
   const reload = useCallback(() => setTick((t) => t + 1), []);
   const setData = useCallback(

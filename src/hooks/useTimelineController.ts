@@ -29,13 +29,18 @@ export function useTimelineController(
   const timeline = useTimeline(kind, userSub);
   const actions = usePostActions();
   const toast = useToast();
+  // usePagedList returns a fresh object on every render but the action
+  // methods (prepend / removeById / updateById) inside it are each
+  // useCallback-stable. Destructure them so our own useCallback deps
+  // don't pick up the outer unstable reference.
+  const { prepend, removeById, updateById } = timeline;
 
   const onDelete = useCallback(
     async (id: string): Promise<void> => {
       if (!window.confirm("この投稿を削除しますか？")) return;
       try {
         await actions.remove(id);
-        timeline.removeById((p) => p.id === id);
+        removeById((p) => p.id === id);
         toast.show("投稿を削除しました", "success");
       } catch (e) {
         toast.show(
@@ -44,17 +49,17 @@ export function useTimelineController(
         );
       }
     },
-    [actions, timeline, toast]
+    [actions, removeById, toast]
   );
 
   const onLikeChange = useCallback(
     (postId: string, next: { liked: boolean; count: number }) => {
-      timeline.updateById(
+      updateById(
         (x) => x.id === postId,
         (x) => ({ ...x, likedByViewer: next.liked, likesCount: next.count })
       );
     },
-    [timeline]
+    [updateById]
   );
 
   const onCreate = useCallback(
@@ -64,10 +69,10 @@ export function useTimelineController(
       parentPostId?: string | null;
     }): Promise<void> => {
       const vm = await actions.create(input);
-      timeline.prepend(vm);
+      prepend(vm);
       toast.show("投稿しました", "success");
     },
-    [actions, timeline, toast]
+    [actions, prepend, toast]
   );
 
   return { timeline, onDelete, onLikeChange, onCreate };

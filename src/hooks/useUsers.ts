@@ -5,6 +5,8 @@ import type { UserVM } from "../types/vm";
 import { useFujuClient } from "./useFujuClient";
 import { useAbortableResource } from "./useAbortableResource";
 
+const DEFAULT_USERS_LIMIT = 20;
+
 interface UsersPage {
   users: UserVM[];
   total: number;
@@ -27,7 +29,7 @@ export function useUsers(opts: {
   offset?: number;
 }): UseUsersState {
   const client = useFujuClient();
-  const limit = opts.limit ?? 20;
+  const limit = opts.limit ?? DEFAULT_USERS_LIMIT;
   const offset = opts.offset ?? 0;
 
   const fetcher = useCallback(

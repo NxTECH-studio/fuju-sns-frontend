@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useNavigate, useParams } from "react-router";
-import { useAuthStatus } from "../auth-component/src";
+import { useAuthStatus } from "fuju-auth-react";
 import { useMeReady } from "../hooks/useMeReady";
 import { usePostDetailController } from "../hooks/usePostDetailController";
 import { PostRow } from "./PostRow";

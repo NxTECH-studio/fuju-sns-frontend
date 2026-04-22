@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { useAuthStatus } from "../auth-component/src";
+import { useAuthStatus } from "fuju-auth-react";
 import { useMeReady } from "../hooks/useMeReady";
 import { useTimelineController } from "../hooks/useTimelineController";
 import { PostRow } from "./PostRow";

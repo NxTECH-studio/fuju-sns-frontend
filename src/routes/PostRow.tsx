@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import type { PostVM } from "../types/vm";
 import { useLikeToggle } from "../hooks/useLikeToggle";
-import { useAuthStatus } from "../auth-component/src";
+import { useAuthStatus } from "fuju-auth-react";
 import { PostCard } from "../ui/components/PostCard";
 import { LikeButton } from "../ui/components/LikeButton";
 import { useToast } from "../state/toastContext";

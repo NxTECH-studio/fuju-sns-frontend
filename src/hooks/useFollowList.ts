@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { listFollowers, listFollowing } from "../api/endpoints/follows";
 import { toUserVM } from "../services/mappers";
-import type { UserVM } from "../services/vm";
+import type { UserVM } from "../types/vm";
 import { usePagedList, type PagedListState } from "./usePagedList";
 import { useFujuClient } from "./useFujuClient";
 

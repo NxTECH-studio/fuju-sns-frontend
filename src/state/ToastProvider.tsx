@@ -6,7 +6,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { ToastStack, type ToastItem } from "../ui/components/Toast";
+import { ToastStack } from "../ui/components/Toast";
+import type { ToastItem } from "../types/toast";
 import {
   ToastContext,
   type ToastContextValue,

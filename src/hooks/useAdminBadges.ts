@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback } from "react";
 import {
   adminBadgesCreate,
   adminBadgesGrant,
@@ -6,85 +6,81 @@ import {
   adminBadgesRevoke,
   adminBadgesUpdate,
 } from "../api/endpoints/admin";
-import { isAbortError } from "../api/error";
 import { toBadgeVM } from "../services/mappers";
-import type { BadgeVM } from "../services/vm";
+import {
+  fromCreateBadgeInput,
+  fromGrantBadgeInput,
+  fromUpdateBadgeInput,
+} from "../services/inputMappers";
+import type { BadgeVM } from "../types/vm";
 import type {
-  CreateBadgeRequest,
-  GrantBadgeRequest,
-  UpdateBadgeRequest,
-} from "../api/types";
+  CreateBadgeInput,
+  GrantBadgeInput,
+  UpdateBadgeInput,
+} from "../types/vmInputs";
 import { useFujuClient } from "./useFujuClient";
+import { useAbortableResource } from "./useAbortableResource";
 
 export interface AdminBadgesState {
   badges: BadgeVM[];
   loading: boolean;
   error: string | null;
   reload: () => void;
-  create: (input: CreateBadgeRequest) => Promise<BadgeVM>;
-  update: (id: string, input: UpdateBadgeRequest) => Promise<BadgeVM>;
-  grant: (sub: string, input: GrantBadgeRequest) => Promise<BadgeVM>;
+  create: (input: CreateBadgeInput) => Promise<BadgeVM>;
+  update: (id: string, input: UpdateBadgeInput) => Promise<BadgeVM>;
+  grant: (sub: string, input: GrantBadgeInput) => Promise<BadgeVM>;
   revoke: (sub: string, badgeId: string) => Promise<void>;
 }
 
 export function useAdminBadges(): AdminBadgesState {
   const client = useFujuClient();
-  const [badges, setBadges] = useState<BadgeVM[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [tick, setTick] = useState(0);
-  const ctrlRef = useRef<AbortController | null>(null);
 
-  useEffect(() => {
-    ctrlRef.current?.abort();
-    const ctrl = new AbortController();
-    ctrlRef.current = ctrl;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true);
-    setError(null);
-
-    adminBadgesList(client, ctrl.signal)
-      .then((res) => {
-        if (ctrl.signal.aborted) return;
-        setBadges(res.data.map(toBadgeVM));
-        setLoading(false);
-      })
-      .catch((e) => {
-        if (isAbortError(e) || ctrl.signal.aborted) return;
-        setError(e instanceof Error ? e.message : "unknown error");
-        setLoading(false);
-      });
-
-    return () => {
-      ctrl.abort();
-    };
-  }, [client, tick]);
-
-  const reload = useCallback(() => setTick((t) => t + 1), []);
-
-  const create = useCallback(
-    async (input: CreateBadgeRequest): Promise<BadgeVM> => {
-      const res = await adminBadgesCreate(client, input);
-      const vm = toBadgeVM(res.data);
-      setBadges((prev) => [...prev, vm]);
-      return vm;
+  const fetcher = useCallback(
+    async (signal: AbortSignal): Promise<BadgeVM[]> => {
+      const res = await adminBadgesList(client, signal);
+      return res.data.map(toBadgeVM);
     },
     [client]
+  );
+
+  const resource = useAbortableResource<BadgeVM[]>({
+    fetcher,
+    deps: [client],
+  });
+
+  const create = useCallback(
+    async (input: CreateBadgeInput): Promise<BadgeVM> => {
+      const res = await adminBadgesCreate(client, fromCreateBadgeInput(input));
+      const vm = toBadgeVM(res.data);
+      resource.setData((prev) => (prev ? [...prev, vm] : [vm]));
+      return vm;
+    },
+    [client, resource]
   );
 
   const update = useCallback(
-    async (id: string, input: UpdateBadgeRequest): Promise<BadgeVM> => {
-      const res = await adminBadgesUpdate(client, id, input);
+    async (id: string, input: UpdateBadgeInput): Promise<BadgeVM> => {
+      const res = await adminBadgesUpdate(
+        client,
+        id,
+        fromUpdateBadgeInput(input)
+      );
       const vm = toBadgeVM(res.data);
-      setBadges((prev) => prev.map((b) => (b.id === id ? vm : b)));
+      resource.setData((prev) =>
+        prev ? prev.map((b) => (b.id === id ? vm : b)) : prev
+      );
       return vm;
     },
-    [client]
+    [client, resource]
   );
 
   const grant = useCallback(
-    async (sub: string, input: GrantBadgeRequest): Promise<BadgeVM> => {
-      const res = await adminBadgesGrant(client, sub, input);
+    async (sub: string, input: GrantBadgeInput): Promise<BadgeVM> => {
+      const res = await adminBadgesGrant(
+        client,
+        sub,
+        fromGrantBadgeInput(input)
+      );
       return toBadgeVM(res.data.badge);
     },
     [client]
@@ -97,5 +93,14 @@ export function useAdminBadges(): AdminBadgesState {
     [client]
   );
 
-  return { badges, loading, error, reload, create, update, grant, revoke };
+  return {
+    badges: resource.data ?? [],
+    loading: resource.loading,
+    error: resource.error,
+    reload: resource.reload,
+    create,
+    update,
+    grant,
+    revoke,
+  };
 }

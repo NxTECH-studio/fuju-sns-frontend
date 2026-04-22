@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import type { PostVM } from "../services/vm";
+import type { PostVM } from "../types/vm";
 import { useLikeToggle } from "../hooks/useLikeToggle";
 import { useAuthStatus } from "../auth-component/src";
 import { PostCard } from "../ui/components/PostCard";

@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react";
-import type { ToastItem } from "../ui/components/Toast";
+import type { ToastKind } from "../types/toast";
 
-export type ToastKind = ToastItem["kind"];
+export type { ToastKind };
 
 export interface ToastContextValue {
   show: (message: string, kind?: ToastKind) => void;

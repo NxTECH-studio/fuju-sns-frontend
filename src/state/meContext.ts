@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import type { MeVM } from "../services/vm";
+import type { MeVM } from "../types/vm";
 
 export type MeState =
   | { status: "idle" }

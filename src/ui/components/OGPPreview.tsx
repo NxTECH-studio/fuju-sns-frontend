@@ -1,5 +1,5 @@
-import type { OGPPreviewVM } from "../../services/vm";
-import { isSafeHttpUrl } from "../../services/url";
+import type { OGPPreviewVM } from "../../types/vm";
+import { isSafeHttpUrl } from "../../utils/url";
 import styles from "./OGPPreview.module.css";
 
 interface OGPPreviewProps {

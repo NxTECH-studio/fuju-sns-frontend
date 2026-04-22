@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
-import type { PostVM } from "../../services/vm";
+import type { PostVM } from "../../types/vm";
 import { Avatar } from "../primitives/Avatar";
 import { OGPPreview } from "./OGPPreview";
+import { SafeImage } from "./SafeImage";
 import styles from "./PostCard.module.css";
 
 interface PostCardProps {
@@ -77,7 +78,16 @@ export function PostCard({
         <ul className={styles.images}>
           {post.images.map((img) => (
             <li key={img.id}>
-              <img src={img.publicUrl} alt="" loading="lazy" />
+              <SafeImage
+                src={img.publicUrl}
+                alt=""
+                loading="lazy"
+                fallback={
+                  <span className={styles.imageFallback}>
+                    画像を読み込めません
+                  </span>
+                }
+              />
             </li>
           ))}
         </ul>

@@ -1,4 +1,4 @@
-import type { BadgeVM } from "../../services/vm";
+import type { BadgeVM } from "../../types/vm";
 import styles from "./BadgeChip.module.css";
 
 interface BadgeChipProps {

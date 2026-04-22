@@ -5,7 +5,7 @@ import {
   timelinesUser,
 } from "../api/endpoints/timelines";
 import { toPostVM } from "../services/mappers";
-import type { PostVM } from "../services/vm";
+import type { PostVM } from "../types/vm";
 import { usePagedList, type PagedListState } from "./usePagedList";
 import { useFujuClient } from "./useFujuClient";
 

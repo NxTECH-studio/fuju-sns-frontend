@@ -1,23 +1,19 @@
 import { useNavigate } from "react-router";
-import { useTimeline } from "../hooks/useTimeline";
-import { useMe } from "../hooks/useMe";
 import { useAuthStatus } from "../auth-component/src";
-import { usePostActions } from "../hooks/usePostActions";
-import { useToast } from "../state/toastContext";
+import { useMeReady } from "../hooks/useMeReady";
+import { useTimelineController } from "../hooks/useTimelineController";
 import { PostRow } from "./PostRow";
 import { ComposerBox } from "./ComposerBox";
 import { Pager } from "../ui/components/Pager";
 import { EmptyState } from "../ui/components/EmptyState";
-import { ErrorMessage } from "../ui/components/ErrorMessage";
+import { AsyncView } from "../ui/components/AsyncView";
 import { Button } from "../ui/primitives/Button";
 
 export function HomeTimelineRoute() {
   const navigate = useNavigate();
   const { status } = useAuthStatus();
-  const me = useMe();
-  const timeline = useTimeline("home");
-  const actions = usePostActions();
-  const toast = useToast();
+  const me = useMeReady();
+  const ctrl = useTimelineController("home");
 
   if (status !== "authenticated") {
     return (
@@ -33,83 +29,45 @@ export function HomeTimelineRoute() {
     );
   }
 
-  const meSub = me.status === "ready" ? me.me.sub : null;
-
-  const handleCreate = async (input: {
-    content: string;
-    imageIds?: string[];
-    parentPostId?: string | null;
-  }) => {
-    const vm = await actions.create({
-      content: input.content,
-      image_ids: input.imageIds,
-      parent_post_id: input.parentPostId ?? null,
-    });
-    timeline.prepend(vm);
-    toast.show("投稿しました", "success");
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("この投稿を削除しますか？")) return;
-    try {
-      await actions.remove(id);
-      timeline.removeById((p) => p.id === id);
-      toast.show("投稿を削除しました", "success");
-    } catch (e) {
-      toast.show(
-        e instanceof Error ? e.message : "削除に失敗しました",
-        "error"
-      );
-    }
-  };
+  const meSub = me?.sub ?? null;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <h1>Home</h1>
-      <ComposerBox onSubmit={handleCreate} />
-      {timeline.loading ? (
-        <p>読み込み中...</p>
-      ) : timeline.error ? (
-        <ErrorMessage message={timeline.error} />
-      ) : timeline.items.length === 0 ? (
-        <EmptyState
-          title="まだ投稿がありません"
-          description="誰かをフォローするか、Global タイムラインをのぞいてみてください。"
-          action={
-            <Button onClick={() => navigate("/global")}>Global を見る</Button>
-          }
-        />
-      ) : (
-        <>
-          {timeline.items.map((p) => (
-            <PostRow
-              key={p.id}
-              post={p}
-              meSub={meSub}
-              onOpen={() => navigate(`/posts/${p.id}`)}
-              onOpenAuthor={
-                p.author ? () => navigate(`/users/${p.author!.sub}`) : undefined
-              }
-              onDelete={() => void handleDelete(p.id)}
-              onLikeChange={(next) =>
-                timeline.updateById(
-                  (x) => x.id === p.id,
-                  (x) => ({
-                    ...x,
-                    likedByViewer: next.liked,
-                    likesCount: next.count,
-                  })
-                )
-              }
-            />
-          ))}
-          <Pager
-            hasMore={timeline.nextCursor !== null}
-            loading={timeline.loadingMore}
-            onLoadMore={timeline.loadMore}
+      <ComposerBox onSubmit={ctrl.onCreate} />
+      <AsyncView
+        loading={ctrl.timeline.loading}
+        error={ctrl.timeline.error}
+        isEmpty={ctrl.timeline.items.length === 0}
+        emptyFallback={
+          <EmptyState
+            title="まだ投稿がありません"
+            description="誰かをフォローするか、Global タイムラインをのぞいてみてください。"
+            action={
+              <Button onClick={() => navigate("/global")}>Global を見る</Button>
+            }
           />
-        </>
-      )}
+        }
+      >
+        {ctrl.timeline.items.map((p) => (
+          <PostRow
+            key={p.id}
+            post={p}
+            meSub={meSub}
+            onOpen={() => navigate(`/posts/${p.id}`)}
+            onOpenAuthor={
+              p.author ? () => navigate(`/users/${p.author!.sub}`) : undefined
+            }
+            onDelete={() => void ctrl.onDelete(p.id)}
+            onLikeChange={(next) => ctrl.onLikeChange(p.id, next)}
+          />
+        ))}
+        <Pager
+          hasMore={ctrl.timeline.nextCursor !== null}
+          loading={ctrl.timeline.loadingMore}
+          onLoadMore={ctrl.timeline.loadMore}
+        />
+      </AsyncView>
     </div>
   );
 }

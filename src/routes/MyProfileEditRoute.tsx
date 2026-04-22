@@ -45,7 +45,7 @@ export function MyProfileEditRoute() {
     e.preventDefault();
     setBusy(true);
     try {
-      await submit({ bio, banner_url: bannerUrl });
+      await submit({ bio, bannerUrl });
       toast.show("保存しました", "success");
       navigate(`/users/${me.me.sub}`);
     } catch (err) {

@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router";
 import { useTimeline } from "../hooks/useTimeline";
 import { useMe } from "../hooks/useMe";
-import { useAuthStatus } from "../auth-component/src";
+import { useAuthStatus } from "fuju-auth-react";
 import { usePostActions } from "../hooks/usePostActions";
 import { useToast } from "../state/toastContext";
 import { PostRow } from "./PostRow";

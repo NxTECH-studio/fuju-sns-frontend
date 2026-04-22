@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
-import { AuthGuard, useAuthStatus } from "../auth-component/src";
+import { AuthGuard, useAuthStatus } from "fuju-auth-react";
 import { EmptyState } from "../ui/components/EmptyState";
 
 export function LoginRoute() {

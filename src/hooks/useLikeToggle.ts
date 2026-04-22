@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { likePost, unlikePost } from "../api/endpoints/posts";
 import { useFujuClient } from "./useFujuClient";
 
@@ -23,6 +23,15 @@ export function useLikeToggle(
   // regardless of closure staleness.
   const stateRef = useRef({ liked: initialLiked, count: initialCount });
   stateRef.current = { liked, count };
+
+  // Re-sync when the owning list reloads with a fresh snapshot for the
+  // same post id. Skip while a toggle is in-flight so we don't clobber
+  // the optimistic value.
+  useEffect(() => {
+    if (pending) return;
+    setLiked(initialLiked);
+    setCount(initialCount);
+  }, [initialLiked, initialCount, pending]);
 
   const toggle = useCallback(async () => {
     if (pending) return;

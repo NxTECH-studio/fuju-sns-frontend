@@ -1,10 +1,5 @@
+import type { ToastItem } from "../../types/toast";
 import styles from "./Toast.module.css";
-
-export interface ToastItem {
-  id: string;
-  kind: "info" | "success" | "error";
-  message: string;
-}
 
 interface ToastStackProps {
   items: ToastItem[];

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import type { UserVM } from "../../services/vm";
-import { safeCssUrl } from "../../services/url";
+import type { UserVM } from "../../types/vm";
+import { safeCssUrl } from "../../utils/url";
 import { Avatar } from "../primitives/Avatar";
 import { BadgeChip } from "./BadgeChip";
 import styles from "./UserProfileView.module.css";

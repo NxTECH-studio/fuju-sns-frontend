@@ -1,13 +1,14 @@
 import { useCallback } from "react";
 import { createPost, deletePost } from "../api/endpoints/posts";
 import { meToAuthorVM, toPostVM } from "../services/mappers";
-import type { PostVM } from "../services/vm";
-import type { CreatePostRequest } from "../api/types";
+import { fromCreatePostInput } from "../services/inputMappers";
+import type { PostVM } from "../types/vm";
+import type { CreatePostInput } from "../types/vmInputs";
 import { useFujuClient } from "./useFujuClient";
 import { useMeContext, type MeState } from "../state/meContext";
 
 export interface PostActions {
-  create: (input: CreatePostRequest) => Promise<PostVM>;
+  create: (input: CreatePostInput) => Promise<PostVM>;
   remove: (id: string) => Promise<void>;
 }
 
@@ -30,8 +31,8 @@ export function usePostActions(): PostActions {
   const { state: me } = useMeContext();
 
   const create = useCallback(
-    async (input: CreatePostRequest): Promise<PostVM> => {
-      const res = await createPost(client, input);
+    async (input: CreatePostInput): Promise<PostVM> => {
+      const res = await createPost(client, fromCreatePostInput(input));
       return fillAuthorFromMe(toPostVM(res.data), me);
     },
     [client, me]

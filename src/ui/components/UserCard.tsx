@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { UserVM } from "../../services/vm";
+import type { UserVM } from "../../types/vm";
 import { Avatar } from "../primitives/Avatar";
 import styles from "./UserCard.module.css";
 

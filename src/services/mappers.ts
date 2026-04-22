@@ -21,7 +21,7 @@ import type {
   PostTagVM,
   PostVM,
   UserVM,
-} from "./vm";
+} from "../types/vm";
 
 export function toBadgeVM(b: Badge): BadgeVM {
   return {

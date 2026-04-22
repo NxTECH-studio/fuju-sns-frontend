@@ -1,4 +1,4 @@
-import type { ImageVM } from "../../services/vm";
+import type { ImageVM } from "../../types/vm";
 import { Button } from "../primitives/Button";
 import styles from "./ImageGallery.module.css";
 

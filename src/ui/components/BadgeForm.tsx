@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import type { BadgeVM } from "../../services/vm";
+import type { BadgeVM } from "../../types/vm";
 import { Button } from "../primitives/Button";
 import { TextInput } from "../primitives/TextInput";
 import { TextArea } from "../primitives/TextArea";

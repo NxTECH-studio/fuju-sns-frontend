@@ -65,6 +65,15 @@ export function toAuthorVM(a: PostAuthor): AuthorVM {
   };
 }
 
+export function meToAuthorVM(me: MeVM): AuthorVM {
+  return {
+    sub: me.sub,
+    displayName: me.displayName,
+    displayId: me.displayId,
+    iconUrl: me.iconUrl,
+  };
+}
+
 function toPostImageVM(i: PostImage): PostImageVM {
   return { id: i.id, publicUrl: i.public_url, position: i.position };
 }

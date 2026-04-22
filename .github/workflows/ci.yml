@@ -32,54 +32,35 @@ jobs:
   build:
     name: Build Test
     runs-on: ubuntu-latest
-    # `src/auth-component` is a symlink to a sibling clone of the private repo
-    # `NxTECH-studio/fuju-system-auth-component`. Check it out alongside the
-    # frontend so the relative symlink resolves during `tsc && vite build`.
-    # Requires the `AUTH_COMPONENT_TOKEN` secret (a PAT with read access to
-    # that repo); without it the checkout step fails with a clear auth error.
     steps:
-      - name: Checkout frontend
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          path: repo/frontend
-
-      - name: Checkout auth-component sibling
-        uses: actions/checkout@v4
-        with:
-          repository: NxTECH-studio/fuju-system-auth-component
-          ref: develop
-          path: repo/auth-component
-          token: ${{ secrets.AUTH_COMPONENT_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'npm'
-          cache-dependency-path: repo/frontend/package-lock.json
 
       - name: Install dependencies
-        working-directory: repo/frontend
         run: npm ci
 
       - name: Build project
-        working-directory: repo/frontend
         run: npm run build
 
       - name: Check build size
-        working-directory: repo/frontend
         run: |
-          echo "🔍 Build Size Report:"
+          echo "Build Size Report:"
           du -h dist/ | tail -1
           echo ""
-          echo "📦 Asset breakdown:"
+          echo "Asset breakdown:"
           find dist/ -type f -exec ls -lh {} \; | awk '{print $5, $9}'
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: repo/frontend/dist/
+          path: dist/
           retention-days: 1
 
   test:

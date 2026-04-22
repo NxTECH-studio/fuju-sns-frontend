@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { useAuthStatus } from "../auth-component/src";
+import { useAuthStatus } from "fuju-auth-react";
 import { useImages } from "../hooks/useImages";
 import { useToast } from "../state/toastContext";
 import { ImageUploader } from "../ui/components/ImageUploader";

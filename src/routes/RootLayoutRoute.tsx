@@ -1,5 +1,5 @@
 import { Outlet, useLocation, useNavigate } from "react-router";
-import { useAuthStatus } from "../auth-component/src";
+import { useAuthStatus } from "fuju-auth-react";
 import {
   RootLayout,
   type HeaderUserVM,

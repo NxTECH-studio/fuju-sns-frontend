@@ -7,40 +7,21 @@ on:
 jobs:
     checks:
         runs-on: ubuntu-latest
-        # `src/auth-component` is a symlink to a sibling clone of the private
-        # repo `NxTECH-studio/fuju-system-auth-component`. Check it out beside
-        # the frontend so the relative symlink resolves during `npm run build`.
-        # Requires the `AUTH_COMPONENT_TOKEN` secret (a PAT with read access
-        # to that repo); without it the checkout step fails explicitly.
         steps:
-            - name: Checkout frontend
+            - name: Checkout
               uses: actions/checkout@v4
-              with:
-                  path: repo/frontend
-
-            - name: Checkout auth-component sibling
-              uses: actions/checkout@v4
-              with:
-                  repository: NxTECH-studio/fuju-system-auth-component
-                  ref: develop
-                  path: repo/auth-component
-                  token: ${{ secrets.AUTH_COMPONENT_TOKEN }}
 
             - name: Use Node.js
               uses: actions/setup-node@v4
               with:
                   node-version: "24"
                   cache: "npm"
-                  cache-dependency-path: repo/frontend/package-lock.json
 
             - name: Install
-              working-directory: repo/frontend
               run: npm ci
 
             - name: Lint
-              working-directory: repo/frontend
               run: npm run lint
 
             - name: Build
-              working-directory: repo/frontend
               run: npm run build

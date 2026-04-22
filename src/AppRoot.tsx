@@ -1,9 +1,10 @@
-import { AuthGuard, AuthProvider } from "./auth-component/src";
+import { AuthGuard, AuthProvider } from "fuju-auth-react";
 import { FujuClientProvider } from "./state/FujuClientProvider";
 import { MeProvider } from "./state/MeProvider";
 import { ToastProvider } from "./state/ToastProvider";
 import { AppRoutes } from "./routes/router";
 import { EmptyState } from "./ui/components/EmptyState";
+import { AuthTokenBridge } from "./hooks/useAuthToken";
 
 export function AppRoot() {
   return (
@@ -13,6 +14,7 @@ export function AppRoot() {
         loadingFallback: <EmptyState title="読み込み中..." />,
       }}
     >
+      <AuthTokenBridge />
       <FujuClientProvider>
         <MeProvider>
           <ToastProvider>

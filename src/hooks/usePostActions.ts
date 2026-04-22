@@ -4,7 +4,7 @@ import { meToAuthorVM, toPostVM } from "../services/mappers";
 import type { PostVM } from "../services/vm";
 import type { CreatePostRequest } from "../api/types";
 import { useFujuClient } from "./useFujuClient";
-import { useMe, type UseMeReturn } from "./useMe";
+import { useMeContext, type MeState } from "../state/meContext";
 
 export interface PostActions {
   create: (input: CreatePostRequest) => Promise<PostVM>;
@@ -16,7 +16,7 @@ export interface PostActions {
 // yet). When the post is the caller's own and `me` is ready, we fill `author`
 // from the `MeProvider` cache so the card doesn't flash `(deleted)` before
 // the next reload. No-op otherwise.
-function fillAuthorFromMe(vm: PostVM, me: UseMeReturn): PostVM {
+function fillAuthorFromMe(vm: PostVM, me: MeState): PostVM {
   if (vm.author !== null) return vm;
   if (me.status !== "ready") return vm;
   if (vm.userId !== me.me.sub) return vm;
@@ -25,7 +25,9 @@ function fillAuthorFromMe(vm: PostVM, me: UseMeReturn): PostVM {
 
 export function usePostActions(): PostActions {
   const client = useFujuClient();
-  const me = useMe();
+  // Read `state` from the context directly: `useMe()` spreads state into a new
+  // object every render, which would churn the `useCallback` dependency below.
+  const { state: me } = useMeContext();
 
   const create = useCallback(
     async (input: CreatePostRequest): Promise<PostVM> => {

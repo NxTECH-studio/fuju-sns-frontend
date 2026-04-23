@@ -7,10 +7,11 @@ import { EmptyState } from "./ui/components/EmptyState";
 import { AuthTokenBridge } from "./hooks/useAuthToken";
 
 export function AppRoot() {
+  const API_BASE = import.meta.env.VITE_AUTH_CORE_BASE_URL;
   return (
     <AuthProvider
       config={{
-        baseURL: "https://auth.sheeplab.net",
+        baseURL: API_BASE,
         loadingFallback: <EmptyState title="読み込み中..." />,
       }}
     >

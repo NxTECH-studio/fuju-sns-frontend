@@ -33,7 +33,7 @@ jobs:
     name: Build Test
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -50,10 +50,10 @@ jobs:
 
       - name: Check build size
         run: |
-          echo "🔍 Build Size Report:"
+          echo "Build Size Report:"
           du -h dist/ | tail -1
           echo ""
-          echo "📦 Asset breakdown:"
+          echo "Asset breakdown:"
           find dist/ -type f -exec ls -lh {} \; | awk '{print $5, $9}'
 
       - name: Upload build artifact

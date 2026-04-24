@@ -1,0 +1,5 @@
+.msg {
+  color: var(--danger);
+  font-size: 13px;
+  padding: 8px 0;
+}

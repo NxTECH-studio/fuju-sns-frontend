@@ -1,0 +1,155 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lookupForm {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+.lookupForm :first-child {
+  flex: 1;
+}
+
+.userCard {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.userCardMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.displayName {
+  color: var(--text-h);
+  font-weight: 500;
+}
+.displayId {
+  font-size: 12px;
+  color: var(--text);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.badgeList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.badgeRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.badgeKey {
+  flex: 1;
+  font-size: 12px;
+  color: var(--text);
+}
+.badgeKey code {
+  font-family: var(--mono);
+}
+
+.grantForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pickerControls {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+.pickerList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+}
+.pickerItem {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  min-width: 0;
+}
+.pickerItem:hover {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+}
+.pickerItemMeta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.pickerItemName {
+  color: var(--text-h);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pickerItemSub {
+  font-size: 11px;
+  color: var(--text);
+  font-family: var(--mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pickerPager {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--text);
+}
+.pickerEmpty {
+  padding: 16px;
+  text-align: center;
+  color: var(--text);
+  font-size: 13px;
+}

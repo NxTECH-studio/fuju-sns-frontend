@@ -1,7 +1,5 @@
-node_modules
-dist
-build
-.vite
-.cache
-coverage
-public
+dist/
+coverage/
+node_modules/
+src/auth-component/
+.claude/

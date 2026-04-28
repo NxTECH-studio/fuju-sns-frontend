@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 import type { PostVM } from "../../types/vm";
 import { Avatar } from "../primitives/Avatar";
 import { OGPPreview } from "./OGPPreview";
@@ -14,6 +14,9 @@ interface PostCardProps {
   likeSlot?: ReactNode;
   followSlot?: ReactNode;
   showReplyMeta?: boolean;
+  // Forwarded to the outermost <article>. Routes attach the impression
+  // tracker via this ref to keep the UI layer free of telemetry imports.
+  rootRef?: Ref<HTMLElement>;
 }
 
 export function PostCard({
@@ -25,10 +28,11 @@ export function PostCard({
   likeSlot,
   followSlot,
   showReplyMeta,
+  rootRef,
 }: PostCardProps) {
   const author = post.author;
   return (
-    <article className={styles.card}>
+    <article ref={rootRef} className={styles.card}>
       <header className={styles.header}>
         <button
           type="button"

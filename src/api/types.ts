@@ -191,3 +191,37 @@ export interface GrantBadgeRequest {
   expires_at?: string | null;
   reason?: string;
 }
+
+// ---- /v1/me/events (telemetry → fuju-emotion-model) ----
+// Whitelist of event_types the frontend can legitimately emit. Server-
+// side hooks (like / follow / comment / share / save / unsave) are
+// rejected by the backend on this endpoint to prevent spoofing.
+export type FrontendEventType =
+  | "view_start"
+  | "view_end"
+  | "scroll_stop"
+  | "rewind";
+
+export interface MeEventInput {
+  item_id: string;
+  event_type: FrontendEventType;
+  // ISO 8601 UTC timestamp captured at the moment the user-visible
+  // signal occurred (NOT the moment we POST). The frontend buffers
+  // events and flushes asynchronously, so this matters.
+  timestamp: string;
+  // view_end only — total watched seconds in this session. Required
+  // for view_end (the backend rejects 400 otherwise).
+  duration_seconds?: number;
+  // view_end only — final playback position. For static images use
+  // duration_seconds=position_seconds (completion = 1.0 then).
+  position_seconds?: number;
+  metadata?: Record<string, unknown>;
+}
+
+export interface MeEventsBatch {
+  events: MeEventInput[];
+}
+
+export interface MeEventsResponse {
+  accepted: number;
+}

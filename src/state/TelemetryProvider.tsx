@@ -1,10 +1,11 @@
 import { useEffect, useMemo, type ReactNode } from "react";
 import { TelemetryContext } from "./telemetryContext";
 import { createTelemetryBatcher } from "../services/telemetry";
-import { useFujuClient } from "../hooks/useFujuClient";
+import { useFujuModelClient } from "../hooks/useFujuModelClient";
+import { useMe } from "../hooks/useMe";
 
-// Wraps the FujuClient with a TelemetryBatcher and exposes it via
-// context. Mounted under FujuClientProvider in AppRoot.
+// Wraps the model HTTP client with a TelemetryBatcher and exposes it via
+// context. Mounted under FujuModelClientProvider in AppRoot.
 //
 // Lifecycle:
 //   - One batcher per provider mount; remounting recreates it.
@@ -12,16 +13,29 @@ import { useFujuClient } from "../hooks/useFujuClient";
 //   - Browser visibility / pagehide also trigger a synchronous flush
 //     so events emitted right before tab close still ship.
 //
-// Authentication: postMeEvents requires a Bearer; FujuClient injects
-// the cached AuthCore token automatically. If the user isn't logged
-// in the request fails 401 and the failed flush is silently dropped
-// (telemetry is best-effort). We don't gate the provider on auth
-// status because the impression-tracking ref-callback wiring is
-// agnostic — it would just never enqueue for an unauthenticated user
-// since they cannot view authenticated routes anyway.
+// Authentication: events are POSTed straight to fuju-emotion-model with
+// the end-user AuthCore Bearer. user_id is stamped from `me.sub` and
+// kept in sync via setUserId() so sign-in transitions don't recreate
+// the batcher (which would lose the in-memory queue). When the caller
+// is unauthenticated the batcher drops the queue on flush rather than
+// emitting 401s.
 export function TelemetryProvider({ children }: { children: ReactNode }) {
-  const client = useFujuClient();
-  const batcher = useMemo(() => createTelemetryBatcher({ client }), [client]);
+  const { client, tenantId } = useFujuModelClient();
+  const me = useMe();
+  const userId = me.status === "ready" ? me.me.sub : null;
+
+  const batcher = useMemo(
+    () =>
+      createTelemetryBatcher({
+        client,
+        tenantId,
+      }),
+    [client, tenantId]
+  );
+
+  useEffect(() => {
+    batcher.setUserId(userId);
+  }, [batcher, userId]);
 
   useEffect(() => {
     const onHide = (): void => {

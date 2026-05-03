@@ -17,6 +17,9 @@ const QUEUE_CAP = BATCH_SIZE * 8;
 export interface TelemetrySink {
   /** Buffer an event for the next flush. Non-blocking, no error path. */
   enqueue(event: TelemetryInput): void;
+  /** Update the user_id stamped on subsequent flushes. Pass null when
+   *  the user signs out. */
+  setUserId(userId: string | null): void;
   /** Flush whatever's pending right now. Best-effort; errors swallowed. */
   flush(): Promise<void>;
   /** Stop timers + run a final flush. Idempotent. */
@@ -35,6 +38,10 @@ export interface TelemetryInput {
 
 interface BatcherDeps {
   client: FujuClient;
+  tenantId: string;
+  /** Initial user id — TelemetryProvider keeps it in sync via
+   *  setUserId() on auth state changes. */
+  initialUserId?: string | null;
   /** Hook for tests + visibility-driven flush. Defaults to a 5s tick. */
   setIntervalImpl?: (cb: () => void, ms: number) => number;
   clearIntervalImpl?: (handle: number) => void;
@@ -42,17 +49,32 @@ interface BatcherDeps {
   nowIso?: () => string;
 }
 
+interface PendingEvent {
+  itemId: string;
+  eventType: FrontendEventType;
+  timestamp: string;
+  durationSeconds?: number;
+  positionSeconds?: number;
+  metadata?: Record<string, unknown>;
+}
+
 class TelemetryBatcher implements TelemetrySink {
-  private queue: MeEventInput[] = [];
+  private queue: PendingEvent[] = [];
   private timer: number | null = null;
   private flushing = false;
   private done = false;
+  private userId: string | null;
 
   constructor(private readonly deps: BatcherDeps) {
+    this.userId = deps.initialUserId ?? null;
     const setI = deps.setIntervalImpl ?? window.setInterval.bind(window);
     this.timer = setI(() => {
       void this.flush();
     }, FLUSH_INTERVAL_MS);
+  }
+
+  setUserId(userId: string | null): void {
+    this.userId = userId;
   }
 
   enqueue(event: TelemetryInput): void {
@@ -64,11 +86,11 @@ class TelemetryBatcher implements TelemetrySink {
       console.warn("telemetry: queue full, dropped oldest event");
     }
     this.queue.push({
-      item_id: event.itemId,
-      event_type: event.eventType,
+      itemId: event.itemId,
+      eventType: event.eventType,
       timestamp: this.deps.nowIso?.() ?? new Date().toISOString(),
-      duration_seconds: event.durationSeconds,
-      position_seconds: event.positionSeconds,
+      durationSeconds: event.durationSeconds,
+      positionSeconds: event.positionSeconds,
       metadata: event.metadata,
     });
     if (this.queue.length >= BATCH_SIZE) {
@@ -79,15 +101,32 @@ class TelemetryBatcher implements TelemetrySink {
   async flush(): Promise<void> {
     if (this.flushing) return;
     if (this.queue.length === 0) return;
+    const userId = this.userId;
+    if (!userId) {
+      // No authenticated user — drop the buffer rather than spamming
+      // 401s at the model. The impression-tracker keeps running on
+      // public routes, so this branch is hit during anonymous browsing.
+      this.queue.length = 0;
+      return;
+    }
     this.flushing = true;
     const drained = this.queue.splice(0, this.queue.length);
+    const events: MeEventInput[] = drained.map((e) => ({
+      user_id: userId,
+      item_id: e.itemId,
+      event_type: e.eventType,
+      timestamp: e.timestamp,
+      duration_seconds: e.durationSeconds,
+      position_seconds: e.positionSeconds,
+      metadata: e.metadata,
+    }));
     try {
-      await postMeEvents(this.deps.client, { events: drained });
+      await postMeEvents(this.deps.client, this.deps.tenantId, { events });
     } catch (e) {
       // Telemetry is best-effort. Network failures are logged but
       // intentionally NOT re-queued — a sustained outage would just
-      // amplify retries while the user keeps scrolling. The SNS
-      // backend's daily fuju batch resilience absorbs the gap.
+      // amplify retries while the user keeps scrolling. The model's
+      // own daily reconciliation absorbs the gap.
       console.warn("telemetry flush failed:", e);
     } finally {
       this.flushing = false;

@@ -103,10 +103,11 @@ class TelemetryBatcher implements TelemetrySink {
     if (this.queue.length === 0) return;
     const userId = this.userId;
     if (!userId) {
-      // No authenticated user — drop the buffer rather than spamming
-      // 401s at the model. The impression-tracker keeps running on
-      // public routes, so this branch is hit during anonymous browsing.
-      this.queue.length = 0;
+      // No authenticated user yet — leave events queued so they
+      // ship on the next flush after sign-in. The impression-tracker
+      // keeps running on public routes (/global, /posts/:id), so
+      // events accumulate during anonymous browsing; QUEUE_CAP bounds
+      // memory while we wait for auth.
       return;
     }
     this.flushing = true;

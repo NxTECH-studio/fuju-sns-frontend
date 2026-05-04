@@ -4,7 +4,7 @@ import type { TelemetrySink, TelemetryInput } from "../services/telemetry";
 
 const noop: TelemetrySink = {
   enqueue() {},
-  setSignedIn() {},
+  setUserId() {},
   async flush() {},
   async shutdown() {},
 };

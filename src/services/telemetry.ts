@@ -17,11 +17,9 @@ const QUEUE_CAP = BATCH_SIZE * 8;
 export interface TelemetrySink {
   /** Buffer an event for the next flush. Non-blocking, no error path. */
   enqueue(event: TelemetryInput): void;
-  /** Mark whether an end-user is signed in. The wire payload no
-   *  longer carries user_id (the model derives it from the Bearer's
-   *  ``sub``); this flag only gates flushes — anonymous events stay
-   *  queued until sign-in to avoid 401s against the model. */
-  setSignedIn(signedIn: boolean): void;
+  /** Update the user_id stamped on subsequent flushes. Pass null when
+   *  the user signs out. */
+  setUserId(userId: string | null): void;
   /** Flush whatever's pending right now. Best-effort; errors swallowed. */
   flush(): Promise<void>;
   /** Stop timers + run a final flush. Idempotent. */
@@ -41,10 +39,9 @@ export interface TelemetryInput {
 interface BatcherDeps {
   client: FujuClient;
   tenantId: string;
-  /** Whether the end-user is signed in initially. TelemetryProvider
-   *  keeps it in sync via setSignedIn() on auth state changes.
-   *  Anonymous mounts buffer events until sign-in. */
-  initialSignedIn?: boolean;
+  /** Initial user id — TelemetryProvider keeps it in sync via
+   *  setUserId() on auth state changes. */
+  initialUserId?: string | null;
   /** Hook for tests + visibility-driven flush. Defaults to a 5s tick. */
   setIntervalImpl?: (cb: () => void, ms: number) => number;
   clearIntervalImpl?: (handle: number) => void;
@@ -66,18 +63,18 @@ class TelemetryBatcher implements TelemetrySink {
   private timer: number | null = null;
   private flushing = false;
   private done = false;
-  private signedIn: boolean;
+  private userId: string | null;
 
   constructor(private readonly deps: BatcherDeps) {
-    this.signedIn = deps.initialSignedIn ?? false;
+    this.userId = deps.initialUserId ?? null;
     const setI = deps.setIntervalImpl ?? window.setInterval.bind(window);
     this.timer = setI(() => {
       void this.flush();
     }, FLUSH_INTERVAL_MS);
   }
 
-  setSignedIn(signedIn: boolean): void {
-    this.signedIn = signedIn;
+  setUserId(userId: string | null): void {
+    this.userId = userId;
   }
 
   enqueue(event: TelemetryInput): void {
@@ -104,22 +101,19 @@ class TelemetryBatcher implements TelemetrySink {
   async flush(): Promise<void> {
     if (this.flushing) return;
     if (this.queue.length === 0) return;
-    if (!this.signedIn) {
+    const userId = this.userId;
+    if (!userId) {
       // No authenticated user yet — leave events queued so they
       // ship on the next flush after sign-in. The impression-tracker
       // keeps running on public routes (/global, /posts/:id), so
       // events accumulate during anonymous browsing; QUEUE_CAP bounds
-      // memory while we wait for auth. The model's middleware would
-      // 401 anonymous POSTs, so guarding here saves wasted requests.
+      // memory while we wait for auth.
       return;
     }
     this.flushing = true;
     const drained = this.queue.splice(0, this.queue.length);
-    // Wire payload no longer carries user_id; the fuju ingestion
-    // handler stamps the introspected sub server-side for end-user
-    // tokens. This closes the spoofing loophole the placeholder field
-    // implied (a malicious client could set any user_id).
     const events: MeEventInput[] = drained.map((e) => ({
+      user_id: userId,
       item_id: e.itemId,
       event_type: e.eventType,
       timestamp: e.timestamp,

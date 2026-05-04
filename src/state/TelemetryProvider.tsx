@@ -14,16 +14,15 @@ import { useMe } from "../hooks/useMe";
 //     so events emitted right before tab close still ship.
 //
 // Authentication: events are POSTed straight to fuju-emotion-model with
-// the end-user AuthCore Bearer. The wire payload no longer carries
-// user_id — the model's introspection middleware stamps the caller's
-// ``sub`` server-side (see fuju-emotion-model
-// ``api/ingestion_app.post_events``). The provider only tells the
-// batcher whether a user is signed in, so anonymous mounts buffer
-// events instead of firing 401s.
+// the end-user AuthCore Bearer. user_id is stamped from `me.sub` and
+// kept in sync via setUserId() so sign-in transitions don't recreate
+// the batcher (which would lose the in-memory queue). When the caller
+// is unauthenticated the batcher drops the queue on flush rather than
+// emitting 401s.
 export function TelemetryProvider({ children }: { children: ReactNode }) {
   const { client, tenantId } = useFujuModelClient();
   const me = useMe();
-  const signedIn = me.status === "ready";
+  const userId = me.status === "ready" ? me.me.sub : null;
 
   const batcher = useMemo(
     () =>
@@ -35,8 +34,8 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    batcher.setSignedIn(signedIn);
-  }, [batcher, signedIn]);
+    batcher.setUserId(userId);
+  }, [batcher, userId]);
 
   useEffect(() => {
     const onHide = (): void => {

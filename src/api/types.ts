@@ -204,10 +204,10 @@ export type FrontendEventType =
   | "rewind";
 
 export interface MeEventInput {
-  // The model derives user_id from the AuthCore Bearer's ``sub`` claim
-  // server-side (spoofing-proof). The wire payload no longer carries
-  // user_id from the client; the previous placeholder was removed once
-  // fuju-emotion-model gained the introspection-based override.
+  // Caller's user id (AuthCore sub). Sent in the payload because the
+  // model is not yet wired to derive it from the Bearer; once it is,
+  // this field can be removed.
+  user_id: string;
   item_id: string;
   event_type: FrontendEventType;
   // ISO 8601 UTC timestamp captured at the moment the user-visible

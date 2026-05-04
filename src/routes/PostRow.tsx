@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import type { PostVM } from "../types/vm";
 import { useLikeToggle } from "../hooks/useLikeToggle";
+import { useImpressionTracker } from "../hooks/useImpressionTracker";
 import { useAuthStatus } from "fuju-auth-react";
 import { PostCard } from "../ui/components/PostCard";
 import { LikeButton } from "../ui/components/LikeButton";
@@ -33,6 +34,12 @@ export function PostRow({
     post.likesCount,
     onLikeChange
   );
+  // view_*/scroll_stop telemetry. The hook attaches an
+  // IntersectionObserver to the PostCard's outer <article> via the
+  // rootRef prop and emits events through the TelemetryProvider.
+  // Authenticated routes get a real provider; public routes fall back
+  // to the no-op sink in useTelemetry.
+  const impressionRef = useImpressionTracker(post.id);
 
   const toggle = useCallback(async () => {
     try {
@@ -50,6 +57,7 @@ export function PostRow({
   return (
     <PostCard
       post={post}
+      rootRef={impressionRef}
       onOpen={onOpen}
       onOpenAuthor={onOpenAuthor}
       onDelete={onDelete}

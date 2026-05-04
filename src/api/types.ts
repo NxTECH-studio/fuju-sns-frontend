@@ -191,3 +191,42 @@ export interface GrantBadgeRequest {
   expires_at?: string | null;
   reason?: string;
 }
+
+// ---- /v1/{tenant}/events (telemetry → fuju-emotion-model, direct) ----
+// Whitelist of event_types the frontend can legitimately emit. Server-
+// side hooks (like / follow / comment / share / save / unsave) are
+// emitted by the SNS backend's commit hooks; this endpoint is only for
+// view-stream signals captured in the client.
+export type FrontendEventType =
+  | "view_start"
+  | "view_end"
+  | "scroll_stop"
+  | "rewind";
+
+export interface MeEventInput {
+  // Caller's user id (AuthCore sub). Sent in the payload because the
+  // model is not yet wired to derive it from the Bearer; once it is,
+  // this field can be removed.
+  user_id: string;
+  item_id: string;
+  event_type: FrontendEventType;
+  // ISO 8601 UTC timestamp captured at the moment the user-visible
+  // signal occurred (NOT the moment we POST). The frontend buffers
+  // events and flushes asynchronously, so this matters.
+  timestamp: string;
+  // view_end only — total watched seconds in this session. Required
+  // for view_end (the model rejects 400 otherwise).
+  duration_seconds?: number;
+  // view_end only — final playback position. For static images use
+  // duration_seconds=position_seconds (completion = 1.0 then).
+  position_seconds?: number;
+  metadata?: Record<string, unknown>;
+}
+
+export interface MeEventsBatch {
+  events: MeEventInput[];
+}
+
+export interface MeEventsResponse {
+  accepted: number;
+}

@@ -1,7 +1,6 @@
 import type {
   Badge,
   FollowResult,
-  Image,
   Post,
   PostAuthor,
   PostImage,
@@ -14,7 +13,6 @@ import type {
   AuthorVM,
   BadgeVM,
   FollowResultVM,
-  ImageVM,
   MeVM,
   OGPPreviewVM,
   PostImageVM,
@@ -111,18 +109,6 @@ export function toPostVM(p: Post): PostVM {
     ogpPreviews: p.ogp_previews.map(toOGPPreviewVM),
     likedByViewer: p.liked_by_viewer,
     followingAuthor: p.following_author,
-  };
-}
-
-export function toImageVM(i: Image): ImageVM {
-  return {
-    id: i.id,
-    fileName: i.file_name,
-    mimeType: i.mime_type,
-    fileSize: i.file_size,
-    publicUrl: i.public_url,
-    userId: i.user_id,
-    createdAt: i.created_at,
   };
 }
 

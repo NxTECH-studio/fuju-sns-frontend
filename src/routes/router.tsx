@@ -30,7 +30,7 @@ export function AppRoutes() {
           element={<FollowListRoute kind="following" />}
         />
         <Route path="settings" element={<SettingsRoute />}>
-          <Route index element={<SettingsProfileSection />} />
+          <Route index element={<Navigate to="profile" replace />} />
           <Route path="profile" element={<SettingsProfileSection />} />
         </Route>
         <Route

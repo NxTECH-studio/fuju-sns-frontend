@@ -1,40 +1,37 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router";
-import { useMe } from "../../hooks/useMe";
+import { useMeReady } from "../../hooks/useMeReady";
 import { useProfileEdit } from "../../hooks/useProfileEdit";
 import { useToast } from "../../state/toastContext";
 import { TextArea } from "../../ui/primitives/TextArea";
 import { TextInput } from "../../ui/primitives/TextInput";
 import { Button } from "../../ui/primitives/Button";
-import { ErrorMessage } from "../../ui/components/ErrorMessage";
+import styles from "../Settings.module.css";
 
 export function SettingsProfileSection() {
   const navigate = useNavigate();
-  const me = useMe();
+  const me = useMeReady();
   const { submit } = useProfileEdit();
   const toast = useToast();
   const [bio, setBio] = useState("");
   const [bannerUrl, setBannerUrl] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const loadedSub = me.status === "ready" ? me.me.sub : null;
+  const loadedSub = me?.sub ?? null;
   useEffect(() => {
-    if (me.status === "ready") {
+    if (me) {
       // Hydrate the form once per identity from the loaded profile. This is the
       // intended sync direction (external state -> form), and the effect only
       // fires when the user identity changes, not on every keystroke.
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setBio(me.me.bio);
-      setBannerUrl(me.me.bannerUrl);
+      setBio(me.bio);
+      setBannerUrl(me.bannerUrl);
     }
     // Only re-sync when the identity changes — edits shouldn't revert on re-render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadedSub]);
 
-  if (me.status === "loading" || me.status === "idle")
-    return <p>読み込み中...</p>;
-  if (me.status === "error") return <ErrorMessage message={me.message} />;
-  if (me.status !== "ready") return null;
+  if (!me) return null;
 
   const handle = async (e: FormEvent) => {
     e.preventDefault();
@@ -42,7 +39,7 @@ export function SettingsProfileSection() {
     try {
       await submit({ bio, bannerUrl });
       toast.show("保存しました", "success");
-      navigate(`/users/${me.me.sub}`);
+      navigate(`/users/${me.sub}`);
     } catch (err) {
       toast.show(
         err instanceof Error ? err.message : "保存に失敗しました",
@@ -54,12 +51,9 @@ export function SettingsProfileSection() {
   };
 
   return (
-    <form
-      onSubmit={handle}
-      style={{ display: "flex", flexDirection: "column", gap: 12 }}
-    >
+    <form onSubmit={handle} className={styles.form}>
       <h1>プロフィール編集</h1>
-      <p style={{ fontSize: 13, color: "var(--text)" }}>
+      <p className={styles.formNote}>
         display_name / display_id / アイコンは AuthCore 側で編集してください。
       </p>
       <TextArea
@@ -76,7 +70,7 @@ export function SettingsProfileSection() {
         maxLength={1024}
         placeholder="https://..."
       />
-      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+      <div className={styles.formActions}>
         <Button type="button" variant="ghost" onClick={() => navigate(-1)}>
           キャンセル
         </Button>

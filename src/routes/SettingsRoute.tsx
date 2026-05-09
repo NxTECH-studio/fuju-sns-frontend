@@ -7,6 +7,7 @@ import {
   type SettingsNavItem,
 } from "../ui/components/SettingsNav";
 import { Button } from "../ui/primitives/Button";
+import styles from "./Settings.module.css";
 
 export function SettingsRoute() {
   const navigate = useNavigate();
@@ -30,30 +31,18 @@ export function SettingsRoute() {
   }
   if (me.status === "error") return <ErrorMessage message={me.message} />;
 
-  const isProfileActive =
-    location.pathname === "/settings" ||
-    location.pathname === "/settings/" ||
-    location.pathname.startsWith("/settings/profile");
-
   const items: SettingsNavItem[] = [
     {
       to: "/settings/profile",
       label: "プロフィール",
-      active: isProfileActive,
+      active: location.pathname.startsWith("/settings/profile"),
     },
   ];
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "minmax(180px, 220px) 1fr",
-        gap: 24,
-        alignItems: "start",
-      }}
-    >
+    <div className={styles.layout}>
       <SettingsNav items={items} onNavigate={(to) => navigate(to)} />
-      <div style={{ minWidth: 0 }}>
+      <div className={styles.content}>
         <Outlet />
       </div>
     </div>

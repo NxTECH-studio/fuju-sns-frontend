@@ -13,7 +13,7 @@ interface SettingsNavProps {
 
 export function SettingsNav({ items, onNavigate }: SettingsNavProps) {
   return (
-    <nav className={styles.nav} aria-label="settings">
+    <nav className={styles.nav} aria-label="設定">
       <ul>
         {items.map((item) => (
           <li key={item.to}>

@@ -3,7 +3,7 @@ import { useAuthStatus } from "fuju-auth-react";
 import { useMeReady } from "../hooks/useMeReady";
 import { useTimelineController } from "../hooks/useTimelineController";
 import { PostRow } from "./PostRow";
-import { ComposerBox } from "./ComposerBox";
+import { PostComposer } from "../ui/components/PostComposer";
 import { Pager } from "../ui/components/Pager";
 import { EmptyState } from "../ui/components/EmptyState";
 import { AsyncView } from "../ui/components/AsyncView";
@@ -21,7 +21,7 @@ export function GlobalTimelineRoute() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <h1>ホーム</h1>
-      {status === "authenticated" && <ComposerBox onSubmit={ctrl.onCreate} />}
+      {status === "authenticated" && <PostComposer onSubmit={ctrl.onCreate} />}
       <AsyncView
         loading={ctrl.timeline.loading}
         error={ctrl.timeline.error}

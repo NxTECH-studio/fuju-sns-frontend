@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useState, type FormEvent } from "react";
 import { TextArea } from "../primitives/TextArea";
 import { Button } from "../primitives/Button";
 import styles from "./PostComposer.module.css";
@@ -11,12 +11,8 @@ const INPUT_OVERFLOW_BUFFER = 50;
 interface PostComposerProps {
   placeholder?: string;
   parentPostId?: string | null;
-  attachedImageIds?: string[];
-  attachSlot?: ReactNode;
-  onDetachImage?: (imageId: string) => void;
   onSubmit: (input: {
     content: string;
-    imageIds?: string[];
     parentPostId?: string | null;
   }) => Promise<void>;
 }
@@ -24,9 +20,6 @@ interface PostComposerProps {
 export function PostComposer({
   placeholder,
   parentPostId,
-  attachedImageIds = [],
-  attachSlot,
-  onDetachImage,
   onSubmit,
 }: PostComposerProps) {
   const [content, setContent] = useState("");
@@ -44,7 +37,6 @@ export function PostComposer({
     try {
       await onSubmit({
         content,
-        imageIds: attachedImageIds.length > 0 ? attachedImageIds : undefined,
         parentPostId: parentPostId ?? undefined,
       });
       setContent("");
@@ -64,26 +56,7 @@ export function PostComposer({
         maxLength={MAX_LEN + INPUT_OVERFLOW_BUFFER}
         rows={3}
       />
-      {attachedImageIds.length > 0 ? (
-        <ul className={styles.imageList}>
-          {attachedImageIds.map((id) => (
-            <li key={id} className={styles.imageItem}>
-              <code>{id.slice(0, 8)}...</code>
-              {onDetachImage ? (
-                <button
-                  type="button"
-                  className={styles.detach}
-                  onClick={() => onDetachImage(id)}
-                >
-                  ×
-                </button>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      ) : null}
       <div className={styles.footer}>
-        {attachSlot}
         <span
           className={styles.counter}
           style={{ color: remaining < 0 ? "var(--danger)" : "var(--text)" }}

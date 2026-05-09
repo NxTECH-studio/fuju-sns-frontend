@@ -23,11 +23,6 @@ export function RootLayoutRoute() {
       active: location.pathname === "/" || location.pathname === "/global",
     },
     {
-      to: "/images",
-      label: "画像",
-      active: location.pathname.startsWith("/images"),
-    },
-    {
       to: "/settings",
       label: "設定",
       active: location.pathname.startsWith("/settings"),

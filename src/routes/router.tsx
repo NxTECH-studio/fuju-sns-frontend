@@ -8,7 +8,6 @@ import { FollowListRoute } from "./FollowListRoute";
 import { UserProfileRoute } from "./UserProfileRoute";
 import { SettingsRoute } from "./SettingsRoute";
 import { SettingsProfileSection } from "./settings/SettingsProfileSection";
-import { ImagesRoute } from "./ImagesRoute";
 import { AdminBadgesRoute } from "./admin/AdminBadgesRoute";
 import { AdminUserBadgesRoute } from "./admin/AdminUserBadgesRoute";
 
@@ -36,7 +35,6 @@ export function AppRoutes() {
           path="me/edit"
           element={<Navigate to="/settings/profile" replace />}
         />
-        <Route path="images" element={<ImagesRoute />} />
         <Route path="admin/badges" element={<AdminBadgesRoute />} />
         <Route path="admin/users" element={<AdminUserBadgesRoute />} />
         <Route path="login" element={<LoginRoute />} />

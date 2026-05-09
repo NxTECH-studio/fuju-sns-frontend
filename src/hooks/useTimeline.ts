@@ -9,6 +9,8 @@ import type { PostVM } from "../types/vm";
 import { usePagedList, type PagedListState } from "./usePagedList";
 import { useFujuClient } from "./useFujuClient";
 
+// "home" は現状どこからも呼ばれていない (フォロー機能を一旦撤去したため)。
+// 再導入時に作り直す前提で経路と timelinesHome import は残置している。
 export type TimelineKind = "home" | "global" | "user";
 
 export function useTimeline(

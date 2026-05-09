@@ -14,14 +14,13 @@ export interface TimelineController {
   ) => void;
   onCreate: (input: {
     content: string;
-    imageIds?: string[];
     parentPostId?: string | null;
   }) => Promise<void>;
 }
 
 // Bundles the timeline hook with the delete / like / create handlers that
 // every timeline-rendering route was repeating. Callers hand the returned
-// functions straight to <PostRow /> and <ComposerBox />.
+// functions straight to <PostRow /> and <PostComposer />.
 export function useTimelineController(
   kind: TimelineKind,
   userSub?: string
@@ -65,7 +64,6 @@ export function useTimelineController(
   const onCreate = useCallback(
     async (input: {
       content: string;
-      imageIds?: string[];
       parentPostId?: string | null;
     }): Promise<void> => {
       const vm = await actions.create(input);

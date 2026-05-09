@@ -16,7 +16,6 @@ import type {
 export function fromCreatePostInput(input: CreatePostInput): CreatePostRequest {
   return {
     content: input.content,
-    image_ids: input.imageIds,
     parent_post_id: input.parentPostId ?? null,
   };
 }

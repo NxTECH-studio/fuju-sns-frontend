@@ -3,7 +3,6 @@
 
 export interface CreatePostInput {
   content: string;
-  imageIds?: string[];
   parentPostId?: string | null;
 }
 

@@ -20,8 +20,7 @@ export function RootLayoutRoute() {
     {
       to: "/",
       label: "ホーム",
-      active:
-        location.pathname === "/" || location.pathname.startsWith("/global"),
+      active: location.pathname === "/" || location.pathname === "/global",
     },
     {
       to: "/images",

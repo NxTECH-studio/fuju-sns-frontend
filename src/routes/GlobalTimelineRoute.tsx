@@ -8,6 +8,9 @@ import { Pager } from "../ui/components/Pager";
 import { EmptyState } from "../ui/components/EmptyState";
 import { AsyncView } from "../ui/components/AsyncView";
 
+// Currently mounted at both `/` and `/global`. Displayed as "ホーム" because
+// follow-based timeline has been removed; `/global` is kept for bookmark
+// compatibility. Will be split again when follow timeline is reintroduced.
 export function GlobalTimelineRoute() {
   const navigate = useNavigate();
   const { status } = useAuthStatus();

@@ -21,34 +21,6 @@
   text-align: right;
 }
 
-.imageList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.imageItem {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-  padding: 4px 8px;
-  background: var(--accent-bg);
-  color: var(--accent);
-  border-radius: 4px;
-  font-size: 12px;
-}
-.detach {
-  background: transparent;
-  border: 0;
-  color: inherit;
-  cursor: pointer;
-  font: inherit;
-  padding: 0;
-  line-height: 1;
-}
-
 .error {
   color: var(--danger);
   font-size: 12px;

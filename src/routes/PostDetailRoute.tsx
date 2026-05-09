@@ -4,7 +4,7 @@ import { useAuthStatus } from "fuju-auth-react";
 import { useMeReady } from "../hooks/useMeReady";
 import { usePostDetailController } from "../hooks/usePostDetailController";
 import { PostRow } from "./PostRow";
-import { ComposerBox } from "./ComposerBox";
+import { PostComposer } from "../ui/components/PostComposer";
 import { Pager } from "../ui/components/Pager";
 import { ErrorMessage } from "../ui/components/ErrorMessage";
 import { Button } from "../ui/primitives/Button";
@@ -53,7 +53,7 @@ export function PostDetailRoute() {
       />
 
       {status === "authenticated" ? (
-        <ComposerBox placeholder="返信を書く..." onSubmit={ctrl.onReply} />
+        <PostComposer placeholder="返信を書く..." onSubmit={ctrl.onReply} />
       ) : null}
 
       <h2>返信 ({post.repliesCount})</h2>

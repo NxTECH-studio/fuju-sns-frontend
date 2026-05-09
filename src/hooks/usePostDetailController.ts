@@ -12,7 +12,6 @@ export interface PostDetailController {
   ) => Promise<void>;
   onReply: (input: {
     content: string;
-    imageIds?: string[];
     parentPostId?: string | null;
   }) => Promise<void>;
 }
@@ -56,7 +55,6 @@ export function usePostDetailController(id: string): PostDetailController {
   const onReply = useCallback(
     async (input: {
       content: string;
-      imageIds?: string[];
       parentPostId?: string | null;
     }): Promise<void> => {
       const vm = await actions.create({ ...input, parentPostId: id });

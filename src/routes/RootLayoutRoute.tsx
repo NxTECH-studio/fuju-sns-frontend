@@ -17,17 +17,15 @@ export function RootLayoutRoute() {
   const isAdmin = me.status === "ready" ? me.me.isAdmin : false;
 
   const navLinks: NavLink[] = [
-    { to: "/", label: "Home", active: location.pathname === "/" },
-    { to: "/global", label: "Global", active: location.pathname === "/global" },
     {
-      to: "/images",
-      label: "画像",
-      active: location.pathname.startsWith("/images"),
+      to: "/",
+      label: "ホーム",
+      active: location.pathname === "/" || location.pathname === "/global",
     },
     {
-      to: "/me/edit",
-      label: "プロフィール編集",
-      active: location.pathname === "/me/edit",
+      to: "/settings",
+      label: "設定",
+      active: location.pathname.startsWith("/settings"),
     },
     ...(isAdmin
       ? ([

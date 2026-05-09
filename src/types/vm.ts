@@ -76,16 +76,6 @@ export interface PostVM {
   followingAuthor: boolean;
 }
 
-export interface ImageVM {
-  id: string;
-  fileName: string;
-  mimeType: string;
-  fileSize: number;
-  publicUrl: string;
-  userId: string;
-  createdAt: string;
-}
-
 export interface FollowResultVM {
   following: boolean;
   followersCount: number;

@@ -1,6 +1,5 @@
 import { Navigate, Route, Routes } from "react-router";
 import { RootLayoutRoute } from "./RootLayoutRoute";
-import { HomeTimelineRoute } from "./HomeTimelineRoute";
 import { GlobalTimelineRoute } from "./GlobalTimelineRoute";
 import { LoginRoute } from "./LoginRoute";
 import { NotFoundRoute } from "./NotFoundRoute";
@@ -17,7 +16,7 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route element={<RootLayoutRoute />}>
-        <Route index element={<HomeTimelineRoute />} />
+        <Route index element={<GlobalTimelineRoute />} />
         <Route path="global" element={<GlobalTimelineRoute />} />
         <Route path="posts/:id" element={<PostDetailRoute />} />
         <Route path="users/:sub" element={<UserProfileRoute />} />

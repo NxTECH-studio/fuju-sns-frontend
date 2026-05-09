@@ -17,8 +17,12 @@ export function RootLayoutRoute() {
   const isAdmin = me.status === "ready" ? me.me.isAdmin : false;
 
   const navLinks: NavLink[] = [
-    { to: "/", label: "Home", active: location.pathname === "/" },
-    { to: "/global", label: "Global", active: location.pathname === "/global" },
+    {
+      to: "/",
+      label: "ホーム",
+      active:
+        location.pathname === "/" || location.pathname.startsWith("/global"),
+    },
     {
       to: "/images",
       label: "画像",

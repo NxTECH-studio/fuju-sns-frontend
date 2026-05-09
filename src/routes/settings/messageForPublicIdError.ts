@@ -1,8 +1,10 @@
 import { ErrorCodes } from "fuju-auth-react";
 
 // AuthCore の public_id 更新で返るエラーコードを、ユーザ向けの日本語メッセージに
-// 変換する。マップ未定義 / null は呼び出し側でフォールバック (err.message ?? 既定文)
-// を出す前提のため、ここでは null を返す。
+// 変換する。引数は string 型: AuthError.code が upstream で string、validatePublicId
+// は ErrorCode (= string のリテラル union) を返すため、両方を受けられるよう string で
+// 受ける。マップ未定義 / null は呼び出し側でフォールバック (err.message ?? 既定文)
+// を出す前提。
 export function messageForPublicIdError(code: string): string | null {
   switch (code) {
     case ErrorCodes.PUBLIC_ID_ALREADY_EXISTS:

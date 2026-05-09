@@ -15,7 +15,7 @@ export function SettingsProfileSection() {
   const navigate = useNavigate();
   const me = useMeReady();
   const { submit } = useProfileEdit();
-  const { updatePublicID } = useAuth();
+  const { updatePublicID, user: authUser } = useAuth();
   const { refresh: refreshMe } = useMeContext();
   const toast = useToast();
 
@@ -49,10 +49,9 @@ export function SettingsProfileSection() {
     setPublicIdError(undefined);
 
     const draft = publicId.trim();
-    if (draft === me.displayId) {
-      // No-op; treat as silent success to avoid an unnecessary network round trip.
-      return;
-    }
+    // AuthCore in-memory の publicId と比較する。me.displayId は Fuju 側 1h TTL
+    // キャッシュ由来でラグがあり、レート制限予防用 no-op の起点としては不正確。
+    if (draft === authUser.publicId) return;
 
     const clientErr = validatePublicId(draft);
     if (clientErr) {
@@ -127,6 +126,7 @@ export function SettingsProfileSection() {
               setPublicId(e.target.value);
               if (publicIdError) setPublicIdError(undefined);
             }}
+            // 制約は fuju-auth-react の validatePublicId (^[a-zA-Z0-9]{4,16}$) と同期。
             minLength={4}
             maxLength={16}
             pattern="[A-Za-z0-9]+"
@@ -135,6 +135,17 @@ export function SettingsProfileSection() {
             error={publicIdError}
           />
           <div className={styles.formActions}>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={publicIdBusy}
+              onClick={() => {
+                setPublicId(authUser.publicId);
+                setPublicIdError(undefined);
+              }}
+            >
+              キャンセル
+            </Button>
             <Button type="submit" variant="primary" disabled={publicIdBusy}>
               {publicIdBusy ? "更新中..." : "公開 ID を更新"}
             </Button>

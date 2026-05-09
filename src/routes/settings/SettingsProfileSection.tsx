@@ -1,14 +1,14 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router";
-import { useMe } from "../hooks/useMe";
-import { useProfileEdit } from "../hooks/useProfileEdit";
-import { useToast } from "../state/toastContext";
-import { TextArea } from "../ui/primitives/TextArea";
-import { TextInput } from "../ui/primitives/TextInput";
-import { Button } from "../ui/primitives/Button";
-import { ErrorMessage } from "../ui/components/ErrorMessage";
+import { useMe } from "../../hooks/useMe";
+import { useProfileEdit } from "../../hooks/useProfileEdit";
+import { useToast } from "../../state/toastContext";
+import { TextArea } from "../../ui/primitives/TextArea";
+import { TextInput } from "../../ui/primitives/TextInput";
+import { Button } from "../../ui/primitives/Button";
+import { ErrorMessage } from "../../ui/components/ErrorMessage";
 
-export function MyProfileEditRoute() {
+export function SettingsProfileSection() {
   const navigate = useNavigate();
   const me = useMe();
   const { submit } = useProfileEdit();
@@ -20,6 +20,10 @@ export function MyProfileEditRoute() {
   const loadedSub = me.status === "ready" ? me.me.sub : null;
   useEffect(() => {
     if (me.status === "ready") {
+      // Hydrate the form once per identity from the loaded profile. This is the
+      // intended sync direction (external state -> form), and the effect only
+      // fires when the user identity changes, not on every keystroke.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setBio(me.me.bio);
       setBannerUrl(me.me.bannerUrl);
     }
@@ -29,17 +33,8 @@ export function MyProfileEditRoute() {
 
   if (me.status === "loading" || me.status === "idle")
     return <p>読み込み中...</p>;
-  if (me.status === "unauthenticated") {
-    return (
-      <div>
-        <p>ログインが必要です。</p>
-        <Button variant="primary" onClick={() => navigate("/login")}>
-          ログイン
-        </Button>
-      </div>
-    );
-  }
   if (me.status === "error") return <ErrorMessage message={me.message} />;
+  if (me.status !== "ready") return null;
 
   const handle = async (e: FormEvent) => {
     e.preventDefault();

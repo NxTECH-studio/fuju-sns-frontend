@@ -51,7 +51,9 @@ export function UserProfileRoute() {
         onCountChange={({ followersCount: c }) => setFollowersCount(c)}
       />
     ) : isSelf ? (
-      <Button onClick={() => navigate("/me/edit")}>プロフィール編集</Button>
+      <Button onClick={() => navigate("/settings/profile")}>
+        プロフィール編集
+      </Button>
     ) : null;
 
   return (

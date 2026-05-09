@@ -25,9 +25,9 @@ export function RootLayoutRoute() {
       active: location.pathname.startsWith("/images"),
     },
     {
-      to: "/me/edit",
-      label: "プロフィール編集",
-      active: location.pathname === "/me/edit",
+      to: "/settings",
+      label: "設定",
+      active: location.pathname.startsWith("/settings"),
     },
     ...(isAdmin
       ? ([

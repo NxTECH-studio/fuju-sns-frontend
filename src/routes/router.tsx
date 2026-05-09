@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router";
+import { Navigate, Route, Routes } from "react-router";
 import { RootLayoutRoute } from "./RootLayoutRoute";
 import { HomeTimelineRoute } from "./HomeTimelineRoute";
 import { GlobalTimelineRoute } from "./GlobalTimelineRoute";
@@ -7,7 +7,8 @@ import { NotFoundRoute } from "./NotFoundRoute";
 import { PostDetailRoute } from "./PostDetailRoute";
 import { FollowListRoute } from "./FollowListRoute";
 import { UserProfileRoute } from "./UserProfileRoute";
-import { MyProfileEditRoute } from "./MyProfileEditRoute";
+import { SettingsRoute } from "./SettingsRoute";
+import { SettingsProfileSection } from "./settings/SettingsProfileSection";
 import { ImagesRoute } from "./ImagesRoute";
 import { AdminBadgesRoute } from "./admin/AdminBadgesRoute";
 import { AdminUserBadgesRoute } from "./admin/AdminUserBadgesRoute";
@@ -28,7 +29,14 @@ export function AppRoutes() {
           path="users/:sub/following"
           element={<FollowListRoute kind="following" />}
         />
-        <Route path="me/edit" element={<MyProfileEditRoute />} />
+        <Route path="settings" element={<SettingsRoute />}>
+          <Route index element={<SettingsProfileSection />} />
+          <Route path="profile" element={<SettingsProfileSection />} />
+        </Route>
+        <Route
+          path="me/edit"
+          element={<Navigate to="/settings/profile" replace />}
+        />
         <Route path="images" element={<ImagesRoute />} />
         <Route path="admin/badges" element={<AdminBadgesRoute />} />
         <Route path="admin/users" element={<AdminUserBadgesRoute />} />

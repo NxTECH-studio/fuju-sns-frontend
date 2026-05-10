@@ -40,15 +40,19 @@ export function useAbortableResource<T>({
   const [tick, setTick] = useState(0);
   const ctrlRef = useRef<AbortController | null>(null);
   const fetcherRef = useRef(fetcher);
-  fetcherRef.current = fetcher;
+  useEffect(() => {
+    fetcherRef.current = fetcher;
+  });
 
   useEffect(() => {
     ctrlRef.current?.abort();
     const ctrl = new AbortController();
     ctrlRef.current = ctrl;
+    /* eslint-disable react-hooks/set-state-in-effect -- intentional reset before async refetch when deps change */
     setLoading(true);
     setError(null);
     if (!keepDataWhileReloading) setDataState(null);
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     fetcherRef
       .current(ctrl.signal)

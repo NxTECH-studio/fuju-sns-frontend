@@ -16,11 +16,13 @@ import { Avatar } from "../../ui/primitives/Avatar";
 import { TextArea } from "../../ui/primitives/TextArea";
 import { TextInput } from "../../ui/primitives/TextInput";
 import { Button } from "../../ui/primitives/Button";
+import { isSafeHttpUrl } from "../../utils/url";
 import styles from "../Settings.module.css";
 import { messageForPublicIdError } from "./messageForPublicIdError";
 
-// AuthCore PUT /v1/user/icon の制約 (auth/usecase/user_uc/service.go)。
-// SNS backend の /v1/images とは別物 (field 名・MIME 制約が異なる)。
+// AuthCore PUT /v1/user/icon の制約 (auth/usecase/user_uc/service.go の
+// MaxIconSize = 5 << 20 = 5MiB)。SNS backend の /v1/images とは別物
+// (field 名・MIME 制約が異なる)。
 const ICON_MAX_BYTES = 5 * 1024 * 1024;
 const ICON_ALLOWED_MIMES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
@@ -109,9 +111,20 @@ export function SettingsProfileSection() {
 
   const handleProfileSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    // banner_url は表示時 (UserProfileView の safeCssUrl) でも http/https 以外を
+    // 弾いているが、保存される値自体に javascript: / data: 等が混じるのを防ぐ
+    // ため、submit 時にも http/https を要求する。空文字 (バナー解除) は許可。
+    const trimmedBannerUrl = bannerUrl.trim();
+    if (trimmedBannerUrl !== "" && !isSafeHttpUrl(trimmedBannerUrl)) {
+      toast.show(
+        "バナー画像 URL は http(s) で始まる URL を指定してください",
+        "error"
+      );
+      return;
+    }
     setBusy(true);
     try {
-      await submit({ bio, bannerUrl });
+      await submit({ bio, bannerUrl: trimmedBannerUrl });
       toast.show("保存しました", "success");
       navigate(`/users/${me.sub}`);
     } catch (err) {
@@ -139,7 +152,7 @@ export function SettingsProfileSection() {
       return;
     }
     if (file.size > ICON_MAX_BYTES) {
-      toast.show("アイコン画像は 5MB 以下にしてください", "error");
+      toast.show("アイコン画像は 5MiB 以下にしてください", "error");
       return;
     }
     setIconBusy(true);
@@ -199,7 +212,7 @@ export function SettingsProfileSection() {
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>アイコン画像</h2>
         <p className={styles.formNote}>
-          JPEG / PNG / WebP, 5MB 以下。反映まで最大 1
+          JPEG / PNG / WebP, 5MiB 以下。反映まで最大 1
           時間ほどかかる場合があります。
         </p>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>

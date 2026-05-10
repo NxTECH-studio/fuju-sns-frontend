@@ -1,4 +1,4 @@
-import { ErrorCodes } from "fuju-auth-react";
+import { ErrorCodes } from "../../auth-component";
 
 // AuthCore の public_id 更新で返るエラーコードを、ユーザ向けの日本語メッセージに
 // 変換する。引数は string 型: AuthError.code が upstream で string、validatePublicId

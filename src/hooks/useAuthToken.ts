@@ -1,5 +1,5 @@
 import { createElement, useEffect, type ReactElement } from "react";
-import { useAuth, useAuthStatus } from "fuju-auth-react";
+import { useAuth, useAuthStatus } from "../auth-component";
 
 let currentToken: string | null = null;
 

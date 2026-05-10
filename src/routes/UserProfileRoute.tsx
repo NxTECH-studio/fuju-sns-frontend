@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { useAuthStatus } from "fuju-auth-react";
+import { useAuthStatus } from "../auth-component";
 import { useUserProfile } from "../hooks/useUserProfile";
 import { useMeReady } from "../hooks/useMeReady";
 import { useTimelineController } from "../hooks/useTimelineController";

@@ -1,4 +1,4 @@
-import { AuthGuard, AuthProvider } from "fuju-auth-react";
+import { AuthGuard, AuthProvider } from "./auth-component";
 import { FujuClientProvider } from "./state/FujuClientProvider";
 import { FujuModelClientProvider } from "./state/FujuModelClientProvider";
 import { MeProvider } from "./state/MeProvider";

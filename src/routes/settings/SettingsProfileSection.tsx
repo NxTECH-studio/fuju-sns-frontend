@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router";
-import { isAuthError, useAuth, validatePublicId } from "fuju-auth-react";
+import { isAuthError, useAuth, validatePublicId } from "../../auth-component";
 import { useMeReady } from "../../hooks/useMeReady";
 import { useMeContext } from "../../state/meContext";
 import { useProfileEdit } from "../../hooks/useProfileEdit";
@@ -126,7 +126,7 @@ export function SettingsProfileSection() {
               setPublicId(e.target.value);
               if (publicIdError) setPublicIdError(undefined);
             }}
-            // 制約は fuju-auth-react の validatePublicId (^[a-zA-Z0-9]{4,16}$) と同期。
+            // 制約は auth-component の validatePublicId (^[a-zA-Z0-9]{4,16}$) と同期。
             minLength={4}
             maxLength={16}
             pattern="[A-Za-z0-9]+"

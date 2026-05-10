@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { follow, unfollow } from "../api/endpoints/follows";
 import { toFollowResultVM } from "../services/mappers";
 import { useFujuClient } from "./useFujuClient";
@@ -26,7 +26,9 @@ export function useFollowToggle(
     following: initialFollowing,
     followersCount: initialFollowersCount,
   });
-  stateRef.current = { following, followersCount };
+  useEffect(() => {
+    stateRef.current = { following, followersCount };
+  });
 
   const toggle = useCallback(async () => {
     if (pending) return;

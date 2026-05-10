@@ -6,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useAuthStatus } from "fuju-auth-react";
+import { useAuthStatus } from "../auth-component";
 import { meGet } from "../api/endpoints/me";
 import { isAbortError, isFujuApiError } from "../api/error";
 import { toMeVM } from "../services/mappers";

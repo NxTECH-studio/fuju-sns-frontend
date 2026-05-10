@@ -22,15 +22,19 @@ export function useLikeToggle(
   // Mirror state in refs so rollback captures the pre-click values
   // regardless of closure staleness.
   const stateRef = useRef({ liked: initialLiked, count: initialCount });
-  stateRef.current = { liked, count };
+  useEffect(() => {
+    stateRef.current = { liked, count };
+  });
 
   // Re-sync when the owning list reloads with a fresh snapshot for the
   // same post id. Skip while a toggle is in-flight so we don't clobber
   // the optimistic value.
   useEffect(() => {
     if (pending) return;
+    /* eslint-disable react-hooks/set-state-in-effect -- intentional re-sync to fresh parent snapshot */
     setLiked(initialLiked);
     setCount(initialCount);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [initialLiked, initialCount, pending]);
 
   const toggle = useCallback(async () => {

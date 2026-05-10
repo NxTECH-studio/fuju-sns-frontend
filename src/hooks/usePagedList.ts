@@ -45,11 +45,13 @@ export function usePagedList<T>({
     moreCtrlRef.current?.abort();
     const ctrl = new AbortController();
     initialCtrlRef.current = ctrl;
+    /* eslint-disable react-hooks/set-state-in-effect -- intentional reset before async refetch when deps change */
     setItems([]);
     setNextCursor(null);
     setLoading(true);
     setLoadingMore(false);
     setError(null);
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     fetchPage(undefined, ctrl.signal)
       .then((page) => {

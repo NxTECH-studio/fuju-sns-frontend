@@ -4,6 +4,7 @@ import { useAuthStatus } from "fuju-auth-react";
 import { useUserProfile } from "../hooks/useUserProfile";
 import { useMeReady } from "../hooks/useMeReady";
 import { useTimelineController } from "../hooks/useTimelineController";
+import { useFollowState } from "../hooks/useFollowState";
 import { UserProfileView } from "../ui/components/UserProfileView";
 import { FollowControl } from "./FollowControl";
 import { PostRow } from "./PostRow";
@@ -22,6 +23,10 @@ export function UserProfileRoute() {
   const profile = useUserProfile(sub);
   const ctrl = useTimelineController("user", sub ?? undefined);
   const [followersCount, setFollowersCount] = useState<number | null>(null);
+  // Swagger does not include follow state on GET /users/:sub; resolve it
+  // by scanning the viewer's own following list. The button is hidden
+  // until this settles to avoid flicker.
+  const followState = useFollowState(sub ?? undefined);
 
   if (!sub) return <p>ユーザー ID がありません</p>;
   if (profile.loading) return <p>読み込み中...</p>;
@@ -31,24 +36,23 @@ export function UserProfileRoute() {
   const user = profile.user;
   const meSub = me?.sub ?? null;
   const isSelf = meSub === user.sub;
-  // Swagger does not include follow state on GET /users/:sub; infer from
-  // the first post in the user's timeline. Until the timeline settles we
-  // do not know the state, so the button is hidden.
-  const firstPost = ctrl.timeline.items[0];
-  const timelineReady = !ctrl.timeline.loading && !ctrl.timeline.error;
-  const inferredFollowing = firstPost?.followingAuthor ?? false;
-  const followKey = timelineReady
-    ? `ready-${inferredFollowing ? 1 : 0}`
-    : "pending";
+  const followingResolved = followState.following;
+  // Reseed FollowControl when the resolved follow-state flips between
+  // pending/true/false so useFollowToggle picks up the right initial value.
+  const followKey =
+    followingResolved === null
+      ? "pending"
+      : `ready-${followingResolved ? 1 : 0}`;
 
   const followAction =
-    !isSelf && status === "authenticated" && timelineReady ? (
+    !isSelf && status === "authenticated" && followingResolved !== null ? (
       <FollowControl
         key={followKey}
         sub={sub}
-        initialFollowing={inferredFollowing}
+        initialFollowing={followingResolved}
         initialFollowersCount={0}
         onCountChange={({ followersCount: c }) => setFollowersCount(c)}
+        onFollowingChange={followState.setFollowing}
       />
     ) : isSelf ? (
       <Button onClick={() => navigate("/settings/profile")}>

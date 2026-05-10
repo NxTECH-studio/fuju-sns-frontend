@@ -9,17 +9,14 @@ export interface JWTPayload {
 function base64UrlDecode(input: string): string {
   const padded = input + '='.repeat((4 - (input.length % 4)) % 4);
   const base64 = padded.replaceAll('-', '+').replaceAll('_', '/');
-  if (typeof atob === 'function') {
-    const binary = atob(base64);
-    try {
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) bytes[i] = binary.codePointAt(i) ?? 0;
-      return new TextDecoder().decode(bytes);
-    } catch {
-      return binary;
-    }
+  const binary = atob(base64);
+  try {
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
+  } catch {
+    return binary;
   }
-  return Buffer.from(base64, 'base64').toString('utf8');
 }
 
 export function decodeJWT(token: string): JWTPayload | null {

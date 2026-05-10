@@ -183,6 +183,19 @@
   (importパス書き換え + ファイル追加 + package.json 変更を 1 コミットにまとめるか、
   少なくとも 1 PR にまとめる)。
 
+### 移植元との差分 (back-port 候補)
+
+移植は基本的に verbatim だが、frontend 側の制約 (React 19 + `verbatimModuleSyntax`) で
+以下 2 ファイルだけ最小修正している。次回 `cp -r` で上書き消失するため、元リポジトリ
+(`../auth-component`) 側にも back-port するか、frontend を canonical 扱いとして元リポ
+ジトリをアーカイブするかを決める必要がある:
+
+- `src/auth-component/components/form/form.tsx`: 先頭に `import type { JSX } from "react"` 追加
+- `src/auth-component/components/form/textBox.tsx`: 先頭に `import type { JSX } from "react"` 追加
+- `src/auth-component/api/decodeJWT.ts`: Node 専用の `Buffer.from` フォールバックを削除
+  (ブラウザ専用コードでは到達しない dead path だった。`atob` 直呼び + `charCodeAt` で
+  統一)
+
 ### 未確認事項 (実装時に確認する)
 
 - `../auth-component/src/` 直下にエクスポートはされていないが内部で利用されている
